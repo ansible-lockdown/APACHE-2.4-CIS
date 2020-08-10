@@ -1,0 +1,27 @@
+---
+- name: Gather OS Type
+  setup:
+      gather_subset: distribution,!all,!min
+  when:
+      - ansible_distribution is not defined
+  tags:
+      - always
+
+- name: Include Prelim Tasks
+  import_tasks: prelim.yml
+  tags:
+      - prelim_tasks
+
+- name: RedHat Fixes
+  import_tasks: cis_apache_redhat_fix.yml
+  when:
+      - ansible_distribution == 'RedHat' or ansible_distribution == 'CentOS'
+  tags:
+      - RedHat
+
+# - name: Ubuntu Fixes
+#   import_tasks: cis_apache_ubuntu_fix.yml
+#   when:
+#       - ansible_distribution == 'Ubuntu'
+#   tags:
+#       - Ubuntu

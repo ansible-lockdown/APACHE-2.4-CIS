@@ -1,0 +1,1218 @@
+---
+# Section 1 Fixes
+- name: "NOTSCORED | 1.1 | AUDIT | Ensure the Pre-Installation Planning Checklist Has Been Implemented"
+  debug:
+      msg:
+          - "Warning! Make sure you have your pre-installation checklist completed"
+          - "Please refer to control 1.1 in the benchmark document for those items"
+  when:
+      - cis_apache_rhel_1_1
+      - apache_cis_section1
+  tags:
+      - level 1
+      - level 2
+      - notscored
+      - audit
+      - rule_1.1
+
+- name: "NOTSCORED | 1.2 | AUDIT | Ensure the Server Is Not a Multi-Use System"
+  block:
+      - name: "NOT SCORED | 1.2 | AUDIT | Ensure the Server Is Not a Multi-Use System | Gather running services for review"
+        command: chkconfig --list | grep ':on'
+        changed_when: false
+        failed_when: false
+        register: apache_rhel_1_2_running_services
+
+      - name: "NOTSCORED | 1.2 | AUDIT | Ensure the Server Is Not a Multi-Use System | Display running services"
+        debug:
+            msg:
+                - "Warning! Below are the running services. Please review"
+                - "Servers should only be single service"
+                - "{{ apache_rhel_1_2_running_services.stdout_lines }}"
+  when:
+      - apache_cis_rhel_1_2
+      - apache_cis_section1
+  tags:
+      - level1
+      - level2
+      - notscored
+      - audit
+      - rule_1.2
+
+- name: "NOTSCORED | 1.3 | PATCH | Ensure Apache Is Installed From the Appropriate Binaries"
+  yum:
+      name: httpd
+      state: present
+  when:
+      - cis_apache_rhel_1_1
+      - apache_cis_section1
+      - apache_cis_disruption_high
+  tags:
+      - level1
+      - level2
+      - notscored
+      - audit
+      - rule_1.3
+
+#Section 2 Fixes
+- name: "NOTSCORED | 2.1 | AUDIT | Ensure Only Necessary Authentication and Authorization Modules Are Enabled"
+  block:
+      - name: "NOT SCORED | 2.1 | AUDIT | Ensure Only Necessary Authentication and Authorization Modules Are Enabled | Capture Auth modules"
+        shell: httpd -M | egrep 'auth._'
+        changed_when: false
+        failed_when: false
+        register: apache_rhel_2_1_auth_modules
+
+      - name: "NOTSCORED | 2.1 | AUDIT | Ensure Only Necessary Authentication and Authorization Modules Are Enabled | Capture LDAP modules"
+        shell: httpd -M | egrep 'ldap'
+        changed_when: false
+        failed_when: false
+        register: apache_rhel_2_1_ldap_modules
+
+      - name: "NOTSCORED | 2.1 | AUDIT | Ensure Only Necessary Authentication and Authorization Modules Are Enabled | Display Modules"
+        debug:
+            msg:
+                - "Warning! Below are the installed modules. Please review and remove any un-needed modules"
+                - "Auth Modules:"
+                - "{{ apache_rhel_2_1_auth_modules.stdout_lines }}"
+                - "LDAP Modules"
+                - "{{ apache_rhel_2_1_ldap_modules.stdout_lines }}"
+  when:
+      - apache_cis_rhel_2_1
+      - apache_cis_section2
+  tags:
+      - level1
+      - level2
+      - notscored
+      - audit
+      - rule_2.1
+
+- name: "SCORED | 2.2 | PATCH | Ensure the Log Config Module Is Enabled"
+  block:
+      - name: "SCORED | 2.2 | AUDIT | Ensure the Log Config Module Is Enabled | Check for Log Module configured"
+        shell: cat {{ apache_cis_server_root_dir }}/conf.modules.d/00-base.conf | grep -i "LoadModule log_config_module"
+        changed_when: false
+        failed_when: false
+        register: apache_rhel_2_2_log_config_module_base
+
+      - name: "SCORED | 2.2 | PATCH | Ensure the Log Config Module Is Enabled | Enable Log Config Module"
+        lineinfile:
+            path: "{{ apache_cis_server_root_dir }}/conf.modules.d/00-base.conf"
+            line: "LoadModule log_config_module modules/mod_log_config.so"
+        notify: restart httpd
+        when: '"log_config_module" not in apache_rhel_2_2_log_config_module_base.stdout'
+
+      - name: "SCORED | 2.2 | PATCH | Ensure the Log Config Module Is Enabled | Enable Log Config Module"
+        replace:
+            path: "{{ apache_cis_server_root_dir }}/conf.modules.d/00-base.conf"
+            regexp: '.*LoadModule log_config_module modules/mod_log_config.so'
+            replace: "LoadModule log_config_module modules/mod_log_config.so"
+        notify: restart httpd
+        when: '"log_config_module" in apache_rhel_2_2_log_config_module_base.stdout'
+
+  when:
+      - apache_cis_rhel_2_2
+      - apache_cis_section2
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_2.2
+
+- name: "SCORED | 2.3 | PATCH | Ensure the WebDAV Modules Are Disabled | Check for enabled WebDAV Module"
+  replace:
+      path: "{{ apache_cis_server_root_dir }}/conf.modules.d/00-dav.conf"
+      regexp: "{{ item.regexp }}"
+      replace: "{{ item.replace }}"
+  with_items:
+      - { regexp: '.*LoadModule dav_module modules/mod_dav.so', replace: '# LoadModule dav_module modules/mod_dav.so' }
+      - { regexp: '.*LoadModule dav_fs_module modules/mod_dav_fs.so', replace: '# LoadModule dav_fs_module modules/mod_dav_fs.so' }
+      - { regexp: '.*LoadModule dav_lock_module modules/mod_dav_lock.so', replace: '# LoadModule dav_lock_module modules/mod_dav_lock.so' }
+  notify: restart httpd
+  when:
+      - apache_cis_rhel_2_3
+      - apache_cis_section2
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_2.3
+
+- name: "SCORED | 2.4 | PATCH | Ensure the Status Module Is Disabled"
+  replace:
+      path: "{{ apache_cis_server_root_dir }}/conf.modules.d/00-base.conf"
+      regexp: '.*LoadModule status_module modules/mod_status.so'
+      replace: '## LoadModule status_module modules/mod_status.so'
+  notify: restart httpd
+  when:
+      - apache_cis_rhel_2_4
+      - apache_cis_section2
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_2.4
+
+- name: "SCORED | 2.5 | PATCH | Ensure the Autoindex Module Is Disabled"
+  replace:
+      path: "{{ apache_cis_server_root_dir }}/conf.modules.d/00-base.conf"
+      regexp: '.*LoadModule autoindex_module modules/mod_autoindex.so'
+      replace: '## LoadModule autoindex_module modules/mod_autoindex.so'
+  notify: restart httpd
+  when:
+      - apache_cis_rhel_2_5
+      - apache_cis_section2
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_2.5
+
+# -------------------------------
+# -------------------------------
+# for control 2.6 disabling mod_proxy prevents httpd service from starting
+# figure out the reason
+# ---------------------------------
+# ----------------------------------
+- name: "SCORED | 2.6 | PATCH | Ensure the Proxy Modules Are Disabled"
+  replace:
+      path: "{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf"
+      regexp: "{{ item.regexp }}"
+      replace: "{{ item.replace }}"
+  with_items:
+      - { regexp: '.*LoadModule proxy_module modules/mod_proxy.so', replace: '# LoadModule proxy_module modules/mod_proxy.so' }
+      - { regexp: '.*LoadModule proxy_connect_module modules/mod_proxy_connect.so', replace: '# LoadModule proxy_connect_module modules/mod_proxy_connect.so' }
+      - { regexp: '.*LoadModule proxy_ftp_module modules/mod_proxy_ftp.so', replace: '# LoadModule proxy_ftp_module modules/mod_proxy_ftp.so' }
+      - { regexp: '.*LoadModule proxy_http_module modules/mod_proxy_http.so', replace: '# LoadModule proxy_http_module modules/mod_proxy_http.so' }
+      - { regexp: '.*LoadModule proxy_fcgi_module modules/mod_proxy_fcgi.so', replace: '# LoadModule proxy_fcgi_module modules/mod_proxy_fcgi.so' }
+      - { regexp: '.*LoadModule proxy_scgi_module modules/mod_proxy_scgi.so', replace: '# LoadModule proxy_scgi_module modules/mod_proxy_scgi.so' }
+      - { regexp: '.*LoadModule proxy_ajp_module modules/mod_proxy_ajp.so', replace: '# LoadModule proxy_ajp_module modules/mod_proxy_ajp.so' }
+      - { regexp: '.*LoadModule proxy_balancer_module modules/mod_proxy_balancer.so', replace: '# LoadModule proxy_balancer_module modules/mod_proxy_balancer.so' }
+      - { regexp: '.*LoadModule proxy_express_module modules/mod_proxy_express.so', replace: '# LoadModule proxy_express_module modules/mod_proxy_express.so' }
+      - { regexp: '.*LoadModule proxy_wstunnel_module modules/mod_proxy_wstunnel.so', replace: '# LoadModule proxy_wstunnel_module modules/mod_proxy_wstunnel.so' }
+      - { regexp: '.*LoadModule proxy_fdpass_module modules/mod_proxy_fdpass.so', replace: '# LoadModule proxy_fdpass_module modules/mod_proxy_fdpass.so' }
+      - { regexp: '.*LoadModule proxy_hcheck_module modules/mod_proxy_hcheck.so', replace: '# LoadModule proxy_hcheck_module modules/mod_proxy_hcheck.so' }
+      - { regexp: '.*LoadModule proxy_uwsgi_module modules/mod_proxy_uwsgi.so', replace: '# LoadModule proxy_uwsgi_module modules/mod_proxy_uwsgi.so' }
+  notify: restart httpd
+  when:
+      - apache_cis_rhel_2_6
+      - apache_cis_section2
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_2.6
+
+- name: "SCORED | 2.7 | PATCH | Ensure the User Directories Module Is Disabled"
+  replace:
+      path: "{{ apache_cis_server_root_dir }}/conf.modules.d/00-base.conf"
+      regexp: '.*LoadModule userdir_module modules/mod_userdir.so'
+      replace: '# LoadModule userdir_module modules/mod_userdir.so'
+  notify: restart httpd
+  when:
+      - apache_cis_rhel_2_7
+      - apache_cis_section2
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_2.7
+
+- name: "SCORED | 2.8 | PATCH | Ensure the Info Module Is Disabled"
+  replace:
+      path: "{{ apache_cis_server_root_dir }}/conf.modules.d/00-base.conf"
+      regexp: '.*LoadModule info_module modules/mod_info.so'
+      replace: '# LoadModule info_module modules/mod_info.so'
+  notify: restart httpd
+  when:
+      - apache_cis_rhel_2_8
+      - apache_cis_section2
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_2.8
+
+- name: "SCORED | 2.9 | PATCH | Ensure the Basic and Digest Authentication Modules are Disabled"
+  replace:
+      path: "{{ apache_cis_server_root_dir }}/conf.modules.d/00-base.conf"
+      regexp: "{{ item.regexp }}"
+      replace: "{{ item.replace }}"
+  with_items:
+      - { regexp: '.*LoadModule auth_basic_module modules/mod_auth_basic.so', replace: '# LoadModule auth_basic_module modules/mod_auth_basic.so' }
+      - { regexp: '.*LoadModule auth_digest_module modules/mod_auth_digest.so', replace: '# LoadModule auth_digest_module modules/mod_auth_digest.so' }
+  notify: restart httpd
+  when:
+      - apache_cis_rhel_2_9
+      - apache_cis_section2
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_2.9
+
+# Section 3 Fixes
+
+# ----------------------------
+# -----------------------------
+# review this to see if we really need to do the multiple blocks. The issue is that if the service is runnign with the user you are trying to set the options for the task will fail since the user is associated with a process
+# ------------------------------
+# -----------------------------
+- name: "SCORED | 3.1 | PATCH | Ensure the Apache Web Server Runs As a Non-Root User"
+  block:
+      - name: "SCORED | 3.1 | AUDIT | Ensure the Apache Web Server Runs As a Non-Root User | Get configured user block"
+        block:
+            - name: "SCORED | 3.1 | AUDIT | Ensure the Apache Web Server Runs As a Non-Root User | Get configured user"
+              shell: cat {{ apache_cis_server_root_dir }}/conf/httpd.conf | grep "User " -A1
+              changed_when: false
+              failed_when: false
+              register: apache_rhel_3_1_configured_user_group
+      
+            - name: "SCORED | 3.1 | AUDIT | Ensure the Apache Web Server Runs As a Non-Root User | Warn about user"
+              debug:
+                  msg:
+                      - "Warning! Below is the user and group for the apache service"
+                      - "Please review to confirm it is a non-root user"
+                      - "This task did not change the user information due to apache_cis_disruption_high being set to false"
+                      - "Set that parameter to true and this task will create the user/group and configure as needed"
+                      - "{{ apache_rhel_3_1_configured_user_group.stdout_lines }}"
+              when: not apache_cis_disruption_high
+
+      - name: "SCORED | 3.1 | PATCH | Ensure the Apache Web Server Runs As a Non-Root User"
+        block:
+            - name: "SCORED | 3.1 | PATCH | Ensure the Apache Web Server Runs As a Non-Root User | Stop apache service"
+              service:
+                  name: httpd
+                  state: stopped
+
+            - name: "SCORED | 3.1 | PATCH | Ensure the Apache Web Server Runs As a Non-Root User | Create Apache group"
+              group:
+                  name: "{{ apache_rhel_user }}"
+                  system: yes
+                  state: present
+
+            - name: "SCORED | 3.1 | PATCH | Ensure the Apache Web Server Runs As a Non-Root User | Create Apache user"
+              user:
+                  name: "{{ apache_rhel_group }}"
+                  system: yes
+                  group: apache
+                  home: /var/www
+                  shell: /sbin/nologin
+
+            - name: "SCORED | 3.1 | PATCH | Ensure the Apache Web Server Runs As a Non-Root User | Add user to configs"
+              replace:
+                  path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+                  regexp: "{{ item.regexp }}"
+                  replace: "{{ item.replace }}"
+              with_items:
+                  - { regexp: 'User .*', replace: 'User {{ apache_rhel_user }}' }
+                  - { regexp: 'Group .*', replace: 'Group {{ apache_rhel_group }}' }
+            - name: "SCORED | 3.1 | PATCH | Ensure the Apache Web Server Runs As a Non-Root User | Start apache service"
+              service:
+                  name: httpd
+                  state: started
+        when: apache_cis_disruption_high
+  when:
+      - apache_cis_rhel_3_1
+      - apache_cis_section3
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_3.1
+
+- name: "SCORED | 3.2 | PATCH | Ensure the Apache User Account Has an Invalid Shell"
+  user:
+      name: "{{ apache_rhel_user }}"
+      shell: /sbin/nologin
+  when:
+      - apache_cis_rhel_3_2
+      - apache_cis_section3
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_3.2
+
+- name: "SCORED | 3.3 | PATCH | Ensure the Apache User Account Is Locked"
+  user:
+      name: "{{ apache_rhel_user }}"
+      password_lock: yes
+  when:
+      - apache_cis_rhel_3_3
+      - apache_cis_section3
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_3.3
+
+# -----------------------------
+# -----------------------------
+# Confirm /etc/httpd only folder we need to adjust
+# -----------------------------
+# -----------------------------
+- name: "SCORED | 3.4 | PATCH | Ensure Apache Directories and Files Are Owned By Root"
+  file:
+      name: "{{ apache_cis_server_root_dir }}"
+      owner: root
+      recurse: yes
+  when:
+      - apache_cis_rhel_3_4
+      - apache_cis_section3
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_3.4
+
+# -----------------------------
+# -----------------------------
+# Confirm /etc/httpd only folder we need to adjust
+# -----------------------------
+# -----------------------------
+
+- name: "SCORED | 3.5 | PATCH | Ensure the Group Is Set Correctly on Apache Directories and Files"
+  file:
+      name: "{{ apache_cis_server_root_dir }}"
+      group: root
+      recurse: yes
+  when:
+      - apache_cis_rhel_3_5
+      - apache_cis_section3
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_3.5
+
+- name: "SCORED | 3.6 | PATCH | Ensure Other Write Access on Apache Directories and Files Is Restricted"
+  file:
+      name: "{{ apache_cis_server_root_dir }}"
+      mode: o-w
+      recurse: yes
+  when:
+      - apache_cis_rhel_3_6
+      - apache_cis_section3
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_3.6
+
+- name: "SCORED | 3.7 | PATCH | Ensure the Core Dump Directory Is Secured"
+  block:
+      - name: "SCORED | 3.7 | AUDIT | Ensure the Core Dump Directory Is Secured | Find if CoreDumpDirectory is used"
+        shell: cat {{ apache_cis_server_root_dir }}/conf/httpd.conf | grep CoreDumpDirectory | cut -f2 -d " "
+        changed_when: false
+        failed_when: false
+        register: apache_cis_3_7_coredumpdirectory
+
+      - name: "SCORED | 3.7 | AUDIT | Ensure the Core Dump Directory Is Secured | Find Web Document Root Dir"
+        shell: cat {{ apache_cis_server_root_dir }}/conf/httpd.conf | grep "DocumentRoot " | cut -f2 -d'"'
+        changed_when: false
+        failed_when: false
+        register: apache_cis_3_7_docrootdir
+
+      - name: "SCORED | 3.7 | AUDIT | Ensure the Core Dump Directory Is Secured | Message if CoreDumpDirectory is Web Document Root Dir"
+        debug:
+            msg: "WARNING!! Your CoreDumpDirectory is using the Web Document Root directory: {{ apache_cis_3_7_coredumpdirectory.stdout }}"
+        when: apache_cis_3_7_coredumpdirectory.stdout == apache_cis_3_7_docrootdir.stdout
+
+      - name: "SCORED | 3.7 | PATCH | Ensure the Core Dump Directory Is Secured"
+        file:
+            name: /var/log/httpd
+            owner: root
+            group: apache
+            mode: o-rwx
+            recurse: yes
+  when:
+      - apache_cis_3_7
+      - apache_cis_section3
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_3.7
+
+- name: "SCORED | 3.8 | PATCH | Ensure the Lock File Is Secured"
+  command: /bin/true
+  changed_when: false
+  failed_when: false
+  when:
+      - apache_cis_3_8
+      - apache_cis_section3
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_3.8
+      - notimplimented
+
+- name: "SCORED | 3.9 | PATCH | Ensure the Pid File Is Secured"
+  block:
+      - name: "SCORED | 3.9 | AUDIT | Ensure the Pid File Is Secured | Get PID location"
+        shell: find / -name httpd.pid
+        changed_when: false
+        failed_when: false
+        register: apache_cis_3_9_httpd_pid_loc
+
+      - name: "SCORED | 3.9 | PATCH | Ensure the Pid File Is Secured | Set permissions"
+        file:
+            path: "{{ apache_cis_3_9_httpd_pid_loc.stdout }}"
+            owner: root
+            group: root
+            mode: o-w,g-w
+
+      - name: "SCORED | 3.9 | AUDIT | Ensure the Pid File Is Secured | Warn if PID is in DocumentRoot dir"
+        debug:
+            msg:
+                - "WARNING!! Your PID file is in the DocumentRoot directory, to confirm with this STIG control"
+                - "please move to another folder that is not within the Document root directory ({{ apache_cis_doc_root_dir.stdout }})"
+        when: apache_cis_doc_root_dir.stdout == apache_cis_3_9_httpd_pid_loc.stdout
+  when:
+      - apache_cis_3_9
+      - apache_cis_section3
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_3.9
+
+# -----------------------------
+# -----------------------------
+# Missing last step to confirm ScoreBoardFile location is not on an externally mounted NFS system. Need to review how to do that
+# -----------------------------
+# -----------------------------
+- name: "SCORED | 3.10 | PATCH | Ensure the ScoreBoard File Is Secured"
+  block:
+      - name: "SCORED | 3.10 | AUDIT | Ensure the ScoreBoard File Is Secured | Check if ScoreBoardFile is in use"
+        shell: cat {{ apache_cis_server_root_dir }}/conf/httpd.conf | grep ScoreBoardFile | cut -f2 -d" "
+        changed_when: false
+        failed_when: false
+        register: apache_cis_3_10_scoreboardfile
+
+      - name: "SCORED | 3.10 | AUDIT | Ensure the ScoreBoard File Is Secured | Warn if the same as DocumentRoot"
+        debug:
+            msg:
+                - "WARNING!! The ScoreBoardFile parameter is in use using the DocumentRoot location"
+                - "This does not conform to CIS standars. Please change the ScoreBoardFile location in {{ apache_cis_server_root_dir }}/conf/httpd.conf"
+        when: 
+            - '"{{ apache_cis_doc_root_dir }}" in apache_cis_3_10_scoreboardfile.stdout'
+
+      - name: "SCORED | 3.10 | PATCH | Ensure the ScoreBoard File Is Secured | Update file permissions"
+        file:
+            path: "{{ apache_cis_3_10_scoreboardfile.stdout }}"
+            owner: root
+            group: root
+            mode: o-w,g-w
+        when: apache_cis_3_10_scoreboardfile != ""
+  when:
+      - apache_cis_3_10
+      - apache_cis_section3
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_3.10
+      - notimplimented
+
+
+# -----------------------------
+# -----------------------------
+# Confirm /etc/httpd only folder we need to adjust
+# -----------------------------
+# -----------------------------
+- name: "SCORED | 3.11 | PATCH | Ensure Group Write Access for the Apache Directories and Files Is Properly Restricted"
+  file:
+      path: "{{ apache_cis_server_root_dir }}"
+      mode: g-w
+      recurse: yes
+  when:
+      - apache_cis_3_11
+      - apache_cis_section3
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_3.11
+
+- name: "SCORED | 3.12 | PATCH | Ensure Group Write Access for the Document Root Directories and Files Is Properly Restricted"
+  file:
+      path: "{{ apache_cis_doc_root_dir }}"
+      mode: g-w
+      recurse: yes
+  when:
+      - apache_cis_3_12
+      - apache_cis_section3
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_3.12
+
+- name: "NOTSCORED | 3.13 | PATCH | Ensure Access to Special Purpose Application Writable Directories is Properly Restricted"
+  command: /bin/true
+  changed_when: false
+  failed_when: false
+  when:
+      - apache_cis_3_13
+      - apache_cis_section3
+  tags:
+      - level1
+      - level2
+      - notscored
+      - patch
+      - rule_3.13
+      - notimplimented
+
+# Section 4 Fixes
+- name: "SCORED | 4.1 | PATCH | Ensure Access to OS Root Directory Is Denied By Default"
+  block:
+      - name: "SCORED | 4.1 | AUDIT | Ensure Access to OS Root Directory Is Denied By Default | Get Root Directory"
+        shell: cat {{ apache_cis_server_root_dir }}/conf/httpd.conf | sed -n '/<Directory \//,/<\/Directory/p'
+        changed_when: false
+        failed_when: false
+        register: apache_cis_4_1_root_directory
+
+      - name: "SCORED | 4.1 | PATCH | Ensure Access to OS Root Directory Is Denied By Default | Repace Require if exists"
+        replace:
+            path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+            regexp: '    Require .*'
+            replace: '    Require all denied'
+            after: '<Directory />'
+            before: '</Directory>'
+        notify: restart httpd
+        when: '"Require" in apache_cis_4_1_root_directory.stdout'
+
+      - name: "SCORED | 4.1 | PATCH | Ensure Access to OS Root Directory Is Denied By Default | Enter Require if it doesn't exist"
+        lineinfile:
+            path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+            regexp: '<Directory />'
+            line: |
+                <Directory />
+                    Require all denied
+        notify: restart httpd
+        when: '"Require" not in apache_cis_4_1_root_directory.stdout'
+  when:
+      - apache_cis_4_1
+      - apache_cis_section4
+  tags:
+      - level1
+      - level2
+      - patch
+      - rule_4.1
+
+- name: "NOTSCORED | 4.2 | PATCH | Ensure Appropriate Access to Web Content Is Allowed"
+  command: /bin/true
+  changed_when: false
+  failed_when: false
+  when:
+      - apache_cis_4_2
+      - apache_cis_section4
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_4.2
+      - notimplimented
+
+
+- name: "SCORED | 4.3 | PATCH | Ensure OverRide Is Disabled for the OS Root Directory"
+  block:
+      - name: "SCORED | 4.3 | AUDIT | Ensure OverRide Is Disabled for the OS Root Directory | Get Root Directory"
+        shell: cat {{ apache_cis_server_root_dir }}/conf/httpd.conf | sed -n '/<Directory \//,/<\/Directory/p'
+        changed_when: false
+        failed_when: false
+        register: apache_cis_4_3_root_directory
+
+      - name: "SCORED | 4.3 | PATCH | Ensure OverRide Is Disabled for the OS Root Directory | Repace AllowOverride if exists"
+        replace:
+            path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+            regexp: '    AllowOverride .*'
+            replace: '    AllowOverride None'
+            after: '<Directory />'
+            before: '</Directory>'
+        notify: restart httpd
+        when: '"AllowOverride" in apache_cis_4_3_root_directory.stdout'
+
+      - name: "SCORED | 4.3 | PATCH | Ensure OverRide Is Disabled for the OS Root Directory | Enter AllowOverride if it doesn't exist"
+        lineinfile:
+            path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+            regexp: '<Directory />'
+            line: |
+                <Directory />
+                    AllowOverride None
+        notify: restart httpd
+        when: '"AllowOverride" not in apache_cis_4_3_root_directory.stdout'
+
+      - name: "SCORED | 4.3 | PATCH | Ensure OverRide Is Disabled for the OS Root Directory | Remove AllowOverrideList element"
+        lineinfile:
+            path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+            regexp: 'AllowOverrideList .*'
+            state: absent
+        notify: restart httpd
+  when:
+      - apache_cis_4_3
+      - apache_cis_section4
+  tags:
+      - level1
+      - level2
+      - patch
+      - rule_4.3
+
+- name: "SCORED | 4.4 | PATCH | Ensure OverRide Is Disabled for All Directories"
+  command: /bin/true
+  changed_when: false
+  failed_when: false
+  when:
+      - apache_cis_4_4
+      - apache_cis_section4
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_4.4
+      - notimplimented
+
+# Section 5 Fixes
+- name: "SCORED | 5.1 | PATCH | Ensure Options for the OS Root Directory Are Restricted"
+  block:
+      - name: "SCORED | 5.1 | AUDIT | Ensure Options for the OS Root Directory Are Restricted | Get Root Directory Settings"
+        shell: cat {{ apache_cis_server_root_dir }}/conf/httpd.conf | sed -n '/<Directory \//,/<\/Directory/p'
+        changed_when: false
+        failed_when: false
+        register: apache_cis_5_1_root_directory
+
+      - name: "SCORED | 5.1 | PATCH | Ensure Options for the OS Root Directory Are Restricted | Replace if Options exist"
+        replace:
+            path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+            regexp: '    Options .*'
+            replace: '    Options None'
+            after: '<Directory />'
+            before: '</Directory>'
+        notify: restart httpd
+        when: '"Options" in apache_cis_5_1_root_directory.stdout'
+
+      - name: "SCORED | 5.1 | PATCH | Ensure Options for the OS Root Directory Are Restricted | Enter Options if doesn't exist"
+        lineinfile:
+            path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+            regexp: '<Directory />'
+            line: |
+                <Directory />
+                    Options None
+        notify: restart httpd
+        when: '"Options" not in apache_cis_5_1_root_directory.stdout'
+  when:
+      - apache_cis_5_1
+      - apache_cis_section5
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_5.1
+
+- name: "SCORED | 5.2 | PATCH | Ensure Options for the Web Root Directory Are Restricted"
+  command: /bin/true
+  changed_when: false
+  failed_when: false
+  when:
+      - apache_cis_5_2
+      - apache_cis_section5
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_5.2
+      - notimplimented
+
+- name: "SCORED | 5.3 | PATCH | Ensure Options for Other Directories Are Minimized"
+  command: /bin/true
+  changed_when: false
+  failed_when: false
+  when:
+      - apache_cis_5_3
+      - apache_cis_section5
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_5.3
+      - notimplimented
+
+- name: "SCORED | 5.4 | PATCH | Ensure Default HTML Content Is Removed"
+  command: /bin/true
+  changed_when: false
+  failed_when: false
+  when:
+      - apache_cis_5_4
+      - apache_cis_section5
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_5.4
+      - notimplimented
+
+- name: "SCORED | 5.5 | PATCH | Ensure the Default CGI Content printenv Script Is Removed"
+  block:
+      - name: "SCORED | 5.5 | AUDIT | Ensure the Default CGI Content printenv Script Is Removed | Get CGI folder"
+        shell: cat {{ apache_cis_server_root_dir }}conf/httpd.conf | grep -i "cgi-bin/" | grep -v "#" | cut -f2 -d'"'
+        changed_when: false
+        failed_when: false
+        register: apache_cis_5_5_cgi_bin_dir
+
+      - name: "SCORED | 5.5 | PATCH | Ensure the Default CGI Content printenv Script Is Removed | Remove printenv"
+        file:
+            path: "{{ item }}/printenv"
+            state: absent
+        with_items:
+            - "{{ apache_cis_5_5_cgi_bin_dir.stdout_lines }}"
+  when:
+      - apache_cis_5_5
+      - apache_cis_section5
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_5.5
+
+- name: "SCORED | 5.6 | PATCH | Ensure the Default CGI Content test-cgi Script Is Removed"
+  block:
+      - name: "SCORED | 5.6 | AUDIT | Ensure the Default CGI Content test-cgi Script Is Removed | Get CGI folder"
+        shell: cat {{ apache_cis_server_root_dir }}/conf/httpd.conf | grep -i "cgi-bin/" | grep -v "#" | cut -f2 -d'"'
+        changed_when: false
+        failed_when: false
+        register: apache_cis_5_6_cgi_bin_dir
+
+      - name: "SCORED | 5.6 | PATCH | Ensure the Default CGI Content test-cgi Script Is Removed | Remove test-cgi folder"
+        file:
+            path: "{{ item }}/test-cgi"
+            state: absent
+        with_items:
+            - "{{ apache_cis_5_6_cgi_bin_dir.stdout_lines }}"
+  when:
+      - apache_cis_5_6
+      - apache_cis_section5
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_5.6
+
+- name: "SCORED | 5.7 | PATCH | Ensure HTTP Request Methods Are Restricted"
+  command: /bin/true
+  changed_when: false
+  failed_when: false
+  when:
+      - apache_cis_5_7
+      - apache_cis_section5
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_5.7
+      - notimplimented
+
+- name: "SCORED | 5.8 | PATCH | Ensure the HTTP TRACE Method Is Disabled"
+  lineinfile:
+      path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+      regexp: 'TraceEnable.*'
+      line: 'TraceEnable Off'
+  notify: restart apache
+  when:
+      - apache_cis_5_8
+      - apache_cis_section5
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_5.8
+
+- name: "SCORED | 5.9 | PATCH | Ensure Old HTTP Protocol Versions Are Disallowed"
+  block:
+      - name: "SCORED | 5.9 | PATCH | Ensure Old HTTP Protocol Versions Are Disallowed | Enable re-write module"
+        lineinfile:
+            path: "{{ apache_cis_server_root_dir }}/conf.modules.d/00-base.conf"
+            regexp: '.*LoadModule rewrite_module modules/mod_rewrite.so'
+            line: 'LoadModule rewrite_module modules/mod_rewrite.so'
+        notify: restart httpd
+
+      - name: "SCORED | 5.9 | PATCH | Ensure Old HTTP Protocol Versions Are Disallowed | Set re-write settings"
+        lineinfile:
+            path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+            regexp: "{{ item.regexp }}"
+            line: "{{ item.line }}"
+            insertafter: '# Supplemental configuration'
+        notify: restart httpd
+        with_items:
+            - { regexp: 'RewriteEngine .*', line: 'RewriteEngine On' }
+            - { regexp: 'RewriteOptions .*', line: 'RewriteOptions Inherit'}
+            - { regexp: 'RewriteCond .*', line: 'RewriteCond %{THE_REQUEST} !HTTP/1\.1$' }
+            - { regexp: 'RewriteRule .*', line: 'RewriteRule .* - [F]' }
+  when:
+      - apache_cis_5_9
+      - apache_cis_section5
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_5.9
+
+- name: "SCORED | 5.10 | PATCH | Ensure Access to .ht* Files Is Restricted"
+  block:
+      - name: "SCORED | 5.10 | AUDIT | Ensure Access to .ht* Files Is Restricted | Does FilesMatch exist"
+        shell: cat {{ apache_cis_server_root_dir }}/conf/httpd.conf | grep -ozP '<FilesMatch \"\^\\.ht\">([\S\s]*?)<\/FilesMatch>'
+        changed_when: false
+        failed_when: false
+        register: apache_cis_5_10_files_match_param
+
+      - name: "SCORED | 5.10 | PATCH | Ensure Access to .ht* Files Is Restricted | Replace Require all setting"
+        replace:
+            path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+            regexp: '    Require.*'
+            replace: '    Require all denied'
+            after: '<FilesMatch "\^\\.ht">'
+            before: '</FilesMatch>'
+        notify: restart httpd
+        when: '"Require" in apache_cis_5_10_files_match_param.stdout'
+
+      - name: "SCORED | 5.10 | PATCH | Ensure Access to .ht* Files Is Restricted | Add Require setting if missing"
+        lineinfile:
+            path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+            regexp: '<FilesMatch "\^\\.ht">'
+            line: |
+                <FilesMatch "^\.ht">
+                    Require all denied
+        notify: restart httpd
+        when: '"Require" not in apache_cis_5_10_files_match_param.stdout and apache_cis_5_10_files_match_param.stdout != ""'
+
+      - name: "SCORED | 5.10 | PATCH | Ensure Access to .ht* Files Is Restricted | Add FilesMatch settings"
+        blockinfile:
+            path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+            marker: "# {mark} FilesMatch ht Setting ANSIBLE MANAGED BLOCK"
+            block: |
+                <FilesMatch "^\.ht">
+                    Require all denied
+                </FilesMatch>
+        notify: restart httpd
+        when: apache_cis_5_10_files_match_param.stdout == ""
+  when:
+      - apache_cis_5_10
+      - apache_cis_section5
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_5.10
+
+- name: "SCORED | 5.11 | PATCH | Ensure Access to Inappropriate File Extensions Is Restricted"
+  block:
+      - name: "SCORED | 5.11 | AUDIT | Ensure Access to Inappropriate File Extensions Is Restricted | Gather file extentions"
+        shell: find * {{ apache_cis_doc_root_dir }} -type f -name '*.*' | awk -F. '{print $NF }' | sort -u
+        changed_when: false
+        failed_when: false
+        register: apache_cis_5_11_file_extentions
+
+      - name: "SCORED | 5.11 | AUDIT | Ensure Access to Inappropriate File Extensions Is Restricted | Find FilesMatch for all files"
+        shell: cat {{ apache_cis_server_root_dir }}/conf/httpd.conf | grep -ozP '<FilesMatch \"\^\.\*\$\">([\S\s]*?)<\/FilesMatch>'
+        changed_when: false
+        failed_when: false
+        register: apache_cis_5_11_files_match_1
+
+      - name:  "SCORED | 5.11 | AUDIT | Ensure Access to Inappropriate File Extensions Is Restricted | Find FilesMatch for specified files"
+        shell: cat {{ apache_cis_server_root_dir }}/conf/httpd.conf | grep -ozP '<FilesMatch \"\^\.\*\\.\(.*\)\$\"\>([\S\s]*?)<\/FilesMatch>'
+        changed_when: false
+        failed_when: false
+        register: apache_cis_5_11_files_match_2
+
+      - name: "SCORED | 5.11 | PATCH | Ensure Access to Inappropriate File Extensions Is Restricted | Replace Require in FilesMatch for all files"
+        replace:
+            path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+            regexp: '    Require.*'
+            replace: '    Require all denied'
+            after: '<FilesMatch "\^\.\*\$">'
+            before: '</FilesMatch>'
+        when: '"Require" in apache_cis_5_11_files_match_1.stdout'
+
+      - name: "SCORED | 5.11 | PATCH | Ensure Access to Inappropriate File Extensions Is Restricted | Add Require in FilesMatch for all files"
+        lineinfile:
+            path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+            regexp: '<FilesMatch "\^\.\*\$">'
+            line: |
+                <FilesMatch "^.*$">
+                    Require all denied
+        when: '"Require" not in apache_cis_5_11_files_match_1.stdout and apache_cis_5_11_files_match_1.stdout != ""'
+
+      - name: "SCORED | 5.11 | PATCH | Ensure Access to Inappropriate File Extensions Is Restricted | Add FilesMatch for all files if missing"
+        blockinfile:
+            path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+            marker: "# {mark} FilesMatch All Settings ANSIBLE MANAGED BLOCK"
+            block: |
+                # Block all files by default, unless specifically allowed.
+                <FilesMatch "^.*$">
+                    Require all denied
+                </FilesMatch>
+        when: apache_cis_5_11_files_match_1.stdout == ""
+
+      - name: "SCORED | 5.11 | PATCH | Ensure Access to Inappropriate File Extensions Is Restricted | Set allowed file types"
+        replace:
+            path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+            regexp: '<FilesMatch \"\^\.\*\\.\(.*\)\$\"\>'
+            replace: '<FilesMatch "^.*\.({{ apache_cis_allowed_filetypes }})$">'
+        when: '"<FilesMatch" in apache_cis_5_11_files_match_2.stdout'
+
+      - name: "SCORED | 5.11 | PATCH | Ensure Access to Inappropriate File Extensions Is Restricted | Replace Require for allowed file types"
+        replace:
+            path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+            regexp: '    Require.*'
+            replace: '    Require all granted'
+            after: '<FilesMatch \"\^\.\*\\.\(.*\)\$\"\>'
+            before: '</FilesMatch>'
+        when: '"Require" in apache_cis_5_11_files_match_2.stdout'
+
+      - name: "SCORED | 5.11 | PATCH | Ensure Access to Inappropriate File Extensions Is Restricted | Add Require for allowed file types"
+        lineinfile:
+            path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+            regexp: '<FilesMatch \"\^\.\*\\.\(.*\)\$\"\>'
+            line: |
+                <FilesMatch "^.*\.({{ apache_cis_allowed_filetypes }})$">
+                    Require all granted
+        when: '"Require" not in apache_cis_5_11_files_match_2.stdout and apache_cis_5_11_files_match_2.stdout != ""'
+
+      - name: "SCORED | 5.11 | PATCH | Ensure Access to Inappropriate File Extensions Is Restricted | Add FilesMatch for allowed files if missing"
+        blockinfile:
+            path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+            marker: "# {mark} FilesMatch File Type Settings ANSIBLE MANAGED BLOCK"
+            block: |
+                # Allow files with specifically approved file extensions
+                # Such as (css, htm; html; js; pdf; txt; xml; xsl; ...),
+                # images (gif; ico; jpeg; jpg; png; ...), multimedia
+                <FilesMatch "^.*\.({{ apache_cis_allowed_filetypes }})$">
+                    Require all granted
+                </FilesMatch>
+        when: apache_cis_5_11_files_match_2.stdout == ""
+
+      - name: "SCORED | 5.11 | AUDIT | Ensure Access to Inappropriate File Extensions Is Restricted | Display file extensions"
+        debug:
+            msg:
+                - "Alert!! Below are the file extensions in use. Please review to make sure they are all approved"
+                - "{{ apache_cis_5_11_file_extentions.stdout_lines }}"
+  when:
+      - apache_cis_5_11
+      - apache_cis_section5
+  tags:
+      - level2
+      - scored
+      - patch
+      - rule_5.11
+
+- name: "SCORED | 5.12 | PATCH | Ensure IP Address Based Requests Are Disallowed"
+  block:
+      - name: "SCORED | 5.12 | PATCH | Ensure IP Address Based Requests Are Disallowed | Enable re-write module"
+        lineinfile:
+            path: "{{ apache_cis_server_root_dir }}/conf.modules.d/00-base.conf"
+            regexp: '.*LoadModule rewrite_module modules/mod_rewrite.so'
+            line: 'LoadModule rewrite_module modules/mod_rewrite.so'
+
+      - name: "SCORED | 5.12 | PATCH | Ensure IP Address Based Requests Are Disallowed | Set re-write settings"
+        lineinfile:
+            path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+            regexp: "{{ item.regexp }}"
+            line: "{{ item.line }}"
+            insertafter: '# Supplemental configuration'
+        with_items:
+            - { regexp: 'RewriteEngine .*', line: 'RewriteEngine On'}
+            - { regexp: 'RewriteCond %{HTTP_HOST}.*', line: 'RewriteCond %{HTTP_HOST} !^{{ apache_cis_toplevel_svr }} [NC]' }
+            - { regexp: 'RewriteCond %{REQUEST_URI}.*', line: 'RewriteCond %{REQUEST_URI} !^/error [NC]' }
+            - { regexp: 'RewriteRule \^\.\(\.\*\).*', line: 'RewriteRule ^.(.*) - [L,F]' }
+  when:
+      - apache_cis_5_12
+      - apache_cis_section5
+  tags:
+      - level2
+      - scored
+      - patch
+      - rule_5.12
+
+- name: "SCORED | 5.13 | PATCH | Ensure the IP Addresses for Listening for Requests Are Specified"
+  block:
+      - name: "SCORED | 5.13 | PATCH | Ensure the IP Addresses for Listening for Requests Are Specified | Remove Listen"
+        lineinfile:
+            path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+            regexp: '^Listen.*'
+            state: absent
+        notify: restart httpd
+
+      - name: "SCORED | 5.13 | PATCH | Ensure the IP Addresses for Listening for Requests Are Specified"
+        lineinfile:
+            path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+            line: 'Listen {{ item }}'
+            insertafter: '# prevent Apache from glomming onto all bound IP addresses'
+        with_items:
+            - "{{ apache_cis_listen_ip_port }}"
+        notify: restart httpd
+  when:
+      - apache_cis_5_13
+      - apache_cis_section5
+  tags:
+      - level2
+      - scored
+      - patch
+      - rule_5.13
+
+- name: "SCORED | 5.14 | PATCH | Ensure Browser Framing Is Restricted"
+  lineinfile:
+      path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+      regexp: '^Header.*'
+      line: 'Header always append X-Frame-Options SAMEORIGIN'
+      insertafter: '# Supplemental configuration'
+  when:
+      - apache_cis_5_14
+      - apache_cis_section5
+  tags:
+      - level2
+      - scored
+      - patch
+      - rule_5.14
+
+- name: |
+        "SCORED | 6.1| PATCH | Ensure the Error Log Filename and Severity Level Are Configured Correctly"
+        "SCORED | 6.2 | PATCH | Ensure a Syslog Facility Is Configured for Error Logging"
+  block:
+      - name: "SCORED | 6.1 | PATCH | Ensure the Error Log Filename and Severity Level Are Configured Correctly | Add LogLevel setting"
+        lineinfile:
+            path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+            regexp: '^LogLevel.*'
+            line: 'LogLevel {{ apache_cis_loglevel.all_mods }} core:{{ apache_cis_loglevel.core_mod }}'
+            insertafter: '# Supplemental configuration'
+        when:
+            - apache_cis_6_1
+
+      - name: "SCORED | 6.1 | PATCH | Ensure the Error Log Filename and Severity Level Are Configured Correctly | Add ErrorLog path"
+        lineinfile:
+            path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+            regexp: '^ErrorLog.*'
+            line: 'ErrorLog "{{ apache_cis_errorlog_path }}"'
+            insertafter: '# Supplemental configuration'
+        when:
+            - apache_cis_6_1
+            - not apache_cis_6_2
+
+      - name: "SCORED | 6.2 | PATCH | Ensure a Syslog Facility Is Configured for Error Logging | Add ErrorLog path set to system:local1"
+        lineinfile:
+            path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+            regexp: '^ErrorLog.*'
+            line: 'ErrorLog "syslog:{{ apache_cis_errorlog_facility }}"'
+            insertafter: '# Supplemental configuration'
+        when:
+            - apache_cis_6_2
+            - not apache_cis_6_1
+
+      - name: |
+              "SCORED | 6.1 | PATCH | Ensure the Error Log Filename and Severity Level Are Configured Correctly | Add combined ErrorLog"
+              "SCORED | 6.2 | PATCH | Ensure a Syslog Facility Is Configured for Error Logging | Add combined ErrorLog"
+        lineinfile:
+            path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+            regexp: '^ErrorLog.*'
+            line: 'ErrorLog "|{{ apache_cis_errorlog_path }} syslog:{{ apache_cis_errorlog_facility }}"'
+            insertafter: '# Supplemental configuration'
+        when:
+            - apache_cis_6_1
+            - apache_cis_6_2
+
+      - name: "SCORED | 6.1 | AUDIT | Ensure the Error Log Filename and Severity Level Are Configured Correctly | Alert about virtual Directories"
+        debug:
+            msg:
+                - "Caution!! If you are using virutal directories please add the ErrorLog directive."
+                - "Each responsible individual or organization needs to access their own web logs and and needs the"
+                - "skills/training/tools for monitoring the logs."
+  when:
+      - apache_cis_6_1 or apache_cis_6_2
+      - apache_cis_section6
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_6.1
+      - rule_6.2
+
+- name: "SCORED | 6.3 | PATCH | Ensure the Server Access Log Is Configured Correctly"
+  block:
+      - name: "SCORED | 6.3 | PATCH | Ensure the Server Access Log Is Configured Correctly | Remove LogFormat"
+        lineinfile:
+            path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+            regexp: '^    LogFormat .*'
+            state: absent
+
+      - name: "SCORED | 6.3 | PATCH | Ensure the Server Access Log Is Configured Correctly | Add/Modify LogFormat and CustomLog"
+        lineinfile:
+            path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+            regexp: "{{ item.regexp }}"
+            line: "{{ item.line }}"
+            insertafter: '<IfModule log_config_module>'
+        notify: restart httpd
+        with_items:
+            - { regexp: '^    LogFormat .*', line: '    LogFormat "{{ apache_cis_log_format }}" combined' }
+            - { regexp: '^    CustomLog .*', line: '    CustomLog "{{ apache_cis_custom_log }}" combined' }
+
+      - name: "SCORED | 6.3 | AUDIT | Ensure the Server Access Log Is Configured Correctly | Notify about need for vhost logging"
+        debug:
+            msg:
+                - "Caution!! If you are using virtual directories please add the LogFormat and and CustomLog directives"
+                - "if you have different people responsible for each web site. Each responsible individual or organization"
+                - "needs access to their own web logs as well as the skills/training/tools for monitoring the logs"
+  when:
+      - apache_cis_6_3
+      - apache_cis_section6
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_6.3
+
+# - name: "SCORED | 6.4 | PATCH | Ensure Log Storage and Rotation Is Configured Correctly"
+  
+#   when:
+#       - apache_cis_6_4
+#       - apache_cis_section6
+#   tags:
+#       - level1
+#       - level2
+#       - scored
+#       - patch
+#       - rule_6.4
