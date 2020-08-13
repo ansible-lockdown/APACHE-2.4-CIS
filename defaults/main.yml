@@ -152,6 +152,10 @@ apache_rhel_user: apache
 apache_rhel_group: apache
 
 # Section 5 task variables
+# Control 5.2
+# This is the options setting for the web root directory vhost settings. Needs to be None or Multiviews to conform to CIS standards
+apache_cis_webrootdir_options: None
+
 # Cotnrol 5.11
 # This is the list of allowed file types for the FilesMatch directive in httpd.conf/apache.conf
 apache_cis_allowed_filetypes: "css|html?|js|pdf|txt|xml|xsl|gif|ico|jpe?g|png"
