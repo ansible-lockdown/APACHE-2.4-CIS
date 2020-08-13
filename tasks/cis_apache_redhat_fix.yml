@@ -210,6 +210,7 @@
       - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_fdpass_module modules/mod_proxy_fdpass.so', replace: '# LoadModule proxy_fdpass_module modules/mod_proxy_fdpass.so' }
       - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_hcheck_module modules/mod_proxy_hcheck.so', replace: '# LoadModule proxy_hcheck_module modules/mod_proxy_hcheck.so' }
       - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/10-proxy_h2.conf', regexp: '.*LoadModule proxy_http2_module modules/mod_proxy_http2.so', replace: '# LoadModule proxy_http2_module modules/mod_proxy_http2.so' }
+      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/10-proxy_h2.conf', regexp: '.*LoadModule proxy_uwsgi_module modules/mod_proxy_uwsgi.so', replace: '# LoadModule proxy_uwsgi_module modules/mod_proxy_uwsgi.so' }
   notify: restart httpd
   when:
       - apache_cis_2_6
@@ -276,7 +277,7 @@
 
 # ----------------------------
 # -----------------------------
-# review this to see if we really need to do the multiple blocks. The issue is that if the service is runnign with the user you are trying to set the options for the task will fail since the user is associated with a process
+# The service is stopped because if the service is running with the user you are trying to set the options for the task will fail since the user is associated with a process
 # ------------------------------
 # -----------------------------
 - name: "SCORED | 3.1 | PATCH | Ensure the Apache Web Server Runs As a Non-Root User"
@@ -749,9 +750,28 @@
       - rule_5.1
 
 - name: "SCORED | 5.2 | PATCH | Ensure Options for the Web Root Directory Are Restricted"
-  command: /bin/true
-  changed_when: false
-  failed_when: false
+  block:
+      - name: "SCORED | 5.2 | PATCH | Ensure Options for the Web Root Directory Are Restricted | Get Document Root vHost settings"
+        shell: cat /etc/httpd/conf/httpd.conf | sed -n "/<Directory "{{ apache_cis_doc_root_dir }}">/,/</Directory>/p"
+        changed_when: false
+        failed_when: false
+        register: apache_cis_5_2_vdir_doc_settings
+
+      - debug: var=apache_cis_5_2_vdir_doc_settings
+      - name: "SCORED | 5.2 | PATCH | Ensure Options for the Web Root Directory Are Restricted | Set options to None or Multiviews if options does not exist"
+        lineinfile:
+            path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+            line: '    Options {{ apache_cis_webrootdir_options }}'
+            insertafter: '^<Directory "{{ apache_cis_doc_root_dir }}>'
+        when: "'Options' not in apache_cis_5_2_vdir_doc_settings.stdout"
+
+      # - name: "SCORED | 5.2 | PATCH | Ensure Options for the Web Root Directory Are Restricted | Set options to None or Multiviews if options does not exist"
+      #   replace:
+      #       path: "{{ apache_cis_server_root_dir }}"
+      #       replace: '    Options.*'
+      #       replace: '    Options {{ apache_cis_webrootdir_options }}'
+      #       after: '^<Directory "{{ apache_cis_doc_root_dir }}">'
+      #       before: '^</Directory>'
   when:
       - apache_cis_5_2
       - apache_cis_section5
@@ -841,20 +861,25 @@
       - patch
       - rule_5.6
 
-- name: "SCORED | 5.7 | PATCH | Ensure HTTP Request Methods Are Restricted"
-  command: /bin/true
-  changed_when: false
-  failed_when: false
-  when:
-      - apache_cis_5_7
-      - apache_cis_section5
-  tags:
-      - level1
-      - level2
-      - scored
-      - patch
-      - rule_5.7
-      - notimplimented
+# - name: "SCORED | 5.7 | PATCH | Ensure HTTP Request Methods Are Restricted"
+#   block:
+#       - name: "SCORED | 5.7 | PATCH | Ensure HTTP Request Methods Are Restricted"
+#         shell: 'cat /etc/httpd/conf/httpd.conf | sed -n "/<Directory \"\/var\/www\/html\">/,/<\/Directory>/p"'
+#         changed_when: false
+#         failed_when: false
+#         register: apache_cis_5_7_vdir_doc_settings
+
+#       - debug: var=apache_cis_5_7_vdir_doc_settings
+#   when:
+#       - apache_cis_5_7
+#       - apache_cis_section5
+#   tags:
+#       - level1
+#       - level2
+#       - scored
+#       - patch
+#       - rule_5.7
+#       - notimplimented
 
 - name: "SCORED | 5.8 | PATCH | Ensure the HTTP TRACE Method Is Disabled"
   lineinfile:
@@ -1488,7 +1513,6 @@
       - scored
       - patch
       - rule_7.2
-      - notimplimented
 
 - name: "SCORED | 7.3 | PATCH | Ensure the Server's Private Key Is Protected"
   block:
