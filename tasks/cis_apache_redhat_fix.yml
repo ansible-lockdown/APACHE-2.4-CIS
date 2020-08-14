@@ -604,6 +604,12 @@
       - patch
       - rule_3.12
 
+# -----------------------------
+# -----------------------------
+# Control 3.13 circle back since I'm not sure what is needed here. You are setting values but I can't figure out where those configurations are located
+# -----------------------------
+# -----------------------------
+
 - name: "NOTSCORED | 3.13 | PATCH | Ensure Access to Special Purpose Application Writable Directories is Properly Restricted"
   command: /bin/true
   changed_when: false
@@ -655,6 +661,12 @@
       - level2
       - patch
       - rule_4.1
+
+# -----------------------------
+# -----------------------------
+# Control 4.2 requires dynamic changes to all <Directory> and <Location> elements. Need to figure out best lineinfile way to handle this
+# -----------------------------
+# -----------------------------
 
 - name: "NOTSCORED | 4.2 | PATCH | Ensure Appropriate Access to Web Content Is Allowed"
   command: /bin/true
@@ -737,7 +749,6 @@
       - scored
       - patch
       - rule_4.4
-      - notimplimented
 
 # Section 5 Fixes
 - name: "SCORED | 5.1 | PATCH | Ensure Options for the OS Root Directory Are Restricted"
@@ -834,6 +845,11 @@
       - rule_5.2
       - notimplimented
 
+# -----------------------------
+# -----------------------------
+# Control 5.3/5.4requires dynamic changes to all <Directory> elements. Need to figure out best lineinfile way to handle this
+# -----------------------------
+# -----------------------------
 - name: "SCORED | 5.3 | PATCH | Ensure Options for Other Directories Are Minimized"
   command: /bin/true
   changed_when: false
