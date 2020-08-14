@@ -38,3 +38,67 @@
       - notscored
       - audit
       - rule_1.2
+
+- name: "NOTSCORED | 1.3 | PATCH | Ensure Apache Is Installed From the Appropriate Binaries"
+  apt:
+      name: apache2
+      state: present
+  when:
+      - apache_cis_1_1
+      - apache_cis_section1
+      - apache_cis_disruption_high
+  tags:
+      - level1
+      - level2
+      - notscored
+      - audit
+      - rule_1.3
+
+# Section 2 Fixes
+- name: "NOTSCORED | 2.1 | AUDIT | Ensure Only Necessary Authentication and Authorization Modules Are Enabled"
+  block:
+      - name: "NOT SCORED | 2.1 | AUDIT | Ensure Only Necessary Authentication and Authorization Modules Are Enabled | Capture Auth modules"
+        shell: apache2ctl -M
+        changed_when: false
+        failed_when: false
+        register: apache_ubuntu_2_1_loaded_modules
+
+      - name: "NOTSCORED | 2.1 | AUDIT | Ensure Only Necessary Authentication and Authorization Modules Are Enabled | Display Modules"
+        debug:
+            msg:
+                - "Warning! Below are the installed modules. Please review and remove any un-needed modules"
+                - "Auth Modules:"
+                - "{{ apache_ubuntu_2_1_loaded_modules.stdout_lines }}"
+  when:
+      - apache_cis_2_1
+      - apache_cis_section2
+  tags:
+      - level1
+      - level2
+      - notscored
+      - audit
+      - rule_2.1
+
+- name: "SCORED | 2.2 | PATCH | Ensure the Log Config Module Is Enabled"
+  block:
+      - name: "SCORED | 2.2 | PATCH | Ensure the Log Config Module Is Enabled | Check to see if mod_log_config already exists"
+        shell: apachectl -l | grep mod_log_config
+        changed_when: false
+        failed_when: false
+        register: apache_ubuntu_mod_log_config_state
+
+      - name: "SCORED | 2.2 | PATCH | Ensure the Log Config Module Is Enabled | Enable mod_log_config if not enabled"
+        command: a2enmod mod_log_config
+        changed_when: apache_ubuntu_mod_log_config_enabled.rc == 0
+        failed_when: apache_ubuntu_mod_log_config_enabled.rc >=1
+        register: apache_ubuntu_mod_log_config_enabled
+        when: apache_ubuntu_mod_log_config_state == ""
+  when:
+      - apache_cis_2_2
+      - apache_cis_section2
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_2.2
