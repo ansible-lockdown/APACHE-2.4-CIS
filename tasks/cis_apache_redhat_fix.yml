@@ -188,30 +188,39 @@
       - rule_2.5
 
 - name: "SCORED | 2.6 | PATCH | Ensure the Proxy Modules Are Disabled"
-  replace:
-      path: "{{ item.path }}"
-      regexp: "{{ item.regexp }}"
-      replace: "{{ item.replace }}"
-  with_items:
-      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_module modules/mod_proxy.so', replace: '# LoadModule proxy_module modules/mod_proxy.so' }
-      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule lbmethod_bybusyness_module modules/mod_lbmethod_bybusyness.so', replace: '# LoadModule lbmethod_bybusyness_module modules/mod_lbmethod_bybusyness.so' }
-      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule lbmethod_byrequests_module modules/mod_lbmethod_byrequests.so', replace: '# LoadModule lbmethod_byrequests_module modules/mod_lbmethod_byrequests.so' }
-      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule lbmethod_bytraffic_module modules/mod_lbmethod_bytraffic.so', replace: '# LoadModule lbmethod_bytraffic_module modules/mod_lbmethod_bytraffic.so' }
-      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule lbmethod_heartbeat_module modules/mod_lbmethod_heartbeat.so', replace: '# LoadModule lbmethod_heartbeat_module modules/mod_lbmethod_heartbeat.so' }
-      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_connect_module modules/mod_proxy_connect.so', replace: '# LoadModule proxy_connect_module modules/mod_proxy_connect.so' }
-      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_ftp_module modules/mod_proxy_ftp.so', replace: '# LoadModule proxy_ftp_module modules/mod_proxy_ftp.so' }
-      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_http_module modules/mod_proxy_http.so', replace: '# LoadModule proxy_http_module modules/mod_proxy_http.so' }
-      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_fcgi_module modules/mod_proxy_fcgi.so', replace: '# LoadModule proxy_fcgi_module modules/mod_proxy_fcgi.so' }
-      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_scgi_module modules/mod_proxy_scgi.so', replace: '# LoadModule proxy_scgi_module modules/mod_proxy_scgi.so' }
-      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_ajp_module modules/mod_proxy_ajp.so', replace: '# LoadModule proxy_ajp_module modules/mod_proxy_ajp.so' }
-      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_balancer_module modules/mod_proxy_balancer.so', replace: '# LoadModule proxy_balancer_module modules/mod_proxy_balancer.so' }
-      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_express_module modules/mod_proxy_express.so', replace: '# LoadModule proxy_express_module modules/mod_proxy_express.so' }
-      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_wstunnel_module modules/mod_proxy_wstunnel.so', replace: '# LoadModule proxy_wstunnel_module modules/mod_proxy_wstunnel.so' }
-      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_fdpass_module modules/mod_proxy_fdpass.so', replace: '# LoadModule proxy_fdpass_module modules/mod_proxy_fdpass.so' }
-      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_hcheck_module modules/mod_proxy_hcheck.so', replace: '# LoadModule proxy_hcheck_module modules/mod_proxy_hcheck.so' }
-      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/10-proxy_h2.conf', regexp: '.*LoadModule proxy_http2_module modules/mod_proxy_http2.so', replace: '# LoadModule proxy_http2_module modules/mod_proxy_http2.so' }
-      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/10-proxy_h2.conf', regexp: '.*LoadModule proxy_uwsgi_module modules/mod_proxy_uwsgi.so', replace: '# LoadModule proxy_uwsgi_module modules/mod_proxy_uwsgi.so' }
-  notify: restart httpd
+  block:
+      - name: "SCORED | 2.6 | PATCH | Ensure the Proxy Modules Are Disabled"
+        replace:
+            path: "{{ item.path }}"
+            regexp: "{{ item.regexp }}"
+            replace: "{{ item.replace }}"
+        with_items:
+            - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_module modules/mod_proxy.so', replace: '# LoadModule proxy_module modules/mod_proxy.so' }
+            - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule lbmethod_bybusyness_module modules/mod_lbmethod_bybusyness.so', replace: '# LoadModule lbmethod_bybusyness_module modules/mod_lbmethod_bybusyness.so' }
+            - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule lbmethod_byrequests_module modules/mod_lbmethod_byrequests.so', replace: '# LoadModule lbmethod_byrequests_module modules/mod_lbmethod_byrequests.so' }
+            - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule lbmethod_bytraffic_module modules/mod_lbmethod_bytraffic.so', replace: '# LoadModule lbmethod_bytraffic_module modules/mod_lbmethod_bytraffic.so' }
+            - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule lbmethod_heartbeat_module modules/mod_lbmethod_heartbeat.so', replace: '# LoadModule lbmethod_heartbeat_module modules/mod_lbmethod_heartbeat.so' }
+            - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_connect_module modules/mod_proxy_connect.so', replace: '# LoadModule proxy_connect_module modules/mod_proxy_connect.so' }
+            - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_ftp_module modules/mod_proxy_ftp.so', replace: '# LoadModule proxy_ftp_module modules/mod_proxy_ftp.so' }
+            - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_http_module modules/mod_proxy_http.so', replace: '# LoadModule proxy_http_module modules/mod_proxy_http.so' }
+            - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_fcgi_module modules/mod_proxy_fcgi.so', replace: '# LoadModule proxy_fcgi_module modules/mod_proxy_fcgi.so' }
+            - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_scgi_module modules/mod_proxy_scgi.so', replace: '# LoadModule proxy_scgi_module modules/mod_proxy_scgi.so' }
+            - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_ajp_module modules/mod_proxy_ajp.so', replace: '# LoadModule proxy_ajp_module modules/mod_proxy_ajp.so' }
+            - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_balancer_module modules/mod_proxy_balancer.so', replace: '# LoadModule proxy_balancer_module modules/mod_proxy_balancer.so' }
+            - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_express_module modules/mod_proxy_express.so', replace: '# LoadModule proxy_express_module modules/mod_proxy_express.so' }
+            - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_wstunnel_module modules/mod_proxy_wstunnel.so', replace: '# LoadModule proxy_wstunnel_module modules/mod_proxy_wstunnel.so' }
+            - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_fdpass_module modules/mod_proxy_fdpass.so', replace: '# LoadModule proxy_fdpass_module modules/mod_proxy_fdpass.so' }
+            - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_hcheck_module modules/mod_proxy_hcheck.so', replace: '# LoadModule proxy_hcheck_module modules/mod_proxy_hcheck.so' }
+            - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_uwsgi_module modules/mod_proxy_uwsgi.so', replace: '# LoadModule proxy_uwsgi_module modules/mod_proxy_uwsgi.so' }
+        notify: restart httpd
+            
+      - name: "SCORED | 2.6 | PATCH | Ensure the Proxy Modules Are Disabled | RHEL 8 extra line"
+        replace:
+            path: '{{ apache_cis_server_root_dir }}/conf.modules.d/10-proxy_h2.conf'
+            regexp: '.*LoadModule proxy_http2_module modules/mod_proxy_http2.so'
+            replace: '# LoadModule proxy_http2_module modules/mod_proxy_http2.so'
+        notify: restart httpd
+        when: ansible_facts.distribution_major_version == "8"
   when:
       - apache_cis_2_6
       - apache_cis_section2
@@ -1637,18 +1646,39 @@
       - patch
       - rule_7.3
 
-- name: "SCORED | 7.4 | PATCH | Ensure Weak SSL Protocols Are Disabled"
+- name: |
+    "SCORED | 7.4 | PATCH | Ensure Weak SSL Protocols Are Disabled"
+    "SCORED | 7.10 | PATCH | Ensure the TLSv1.0 and TLSv1.1 Protocols are Disabled"
   block:
-      - name: "SCORED | 7.4 | PATCH | Ensure Weak SSL Protocols Are Disabled | Set TLS1.2"
+      - name: |
+          "SCORED | 7.4 | PATCH | Ensure Weak SSL Protocols Are Disabled | Set TLSv1.2 and TLSv1.3"
+          "SCORED | 7.10 | PATCH | Ensure the TLSv1.0 and TLSv1.1 Protocols are Disabled | Set TLSv1.2 and TLSv1.3"
         lineinfile:
             path: "{{ apache_cis_server_root_dir }}/conf.d/ssl.conf"
             regexp: '^#SSLProtocol|^SSLProtocol'
             line: 'SSLProtocol TLSv1.2 TLSv1.3'
             insertafter: '^SSLEngine'
         notify: restart httpd
-        when: apache_cis_tls_1_2_available
+        when:
+            - apache_cis_tls_1_2_available
+            - ansible_facts.distribution_major_version == "8"
+      
+      - name: |
+          "SCORED | 7.4 | PATCH | Ensure Weak SSL Protocols Are Disabled | Set TLSv1.2"
+          "SCORED | 7.10 | PATCH | Ensure the TLSv1.0 and TLSv1.1 Protocols are Disabled| Set TLSv1.2"
+        lineinfile:
+            path: "{{ apache_cis_server_root_dir }}/conf.d/ssl.conf"
+            regexp: '^#SSLProtocol|^SSLProtocol'
+            line: 'SSLProtocol TLSv1.2'
+            insertafter: '^SSLEngine'
+        notify: restart httpd
+        when:
+            - apache_cis_tls_1_2_available
+            - ansible_facts.distribution_major_version == "7"
 
-      - name: "SCORED | 7.4 | PATCH | Ensure Weak SSL Protocols Are Disabled | Set TLSv1"
+      - name: |
+          "SCORED | 7.4 | PATCH | Ensure Weak SSL Protocols Are Disabled | Set TLSv1"
+          "SCORED | 7.10 | PATCH | Ensure the TLSv1.0 and TLSv1.1 Protocols are Disabled | Set TLSv1"
         lineinfile:
             path: "{{ apache_cis_server_root_dir }}/conf.d/ssl.conf"
             regexp: '^#SSLProtocol|^SSLProtocol'
@@ -1657,7 +1687,8 @@
         notify: restart httpd
         when: not apache_cis_tls_1_2_available
   when:
-      - apache_cis_7_4
+      - apache_cis_7_4 or
+        apache_cis_7_10
       - apache_cis_section7
   tags:
       - level1
@@ -1766,20 +1797,26 @@
       - patch
       - rule_7.9
 
-- name: "SCORED | 7.10 | PATCH | Ensure the TLSv1.0 and TLSv1.1 Protocols are Disabled"
-  lineinfile:
-      path: "{{ apache_cis_server_root_dir }}/conf.d/ssl.conf"
-      regexp: '^#SSLProtocol|^SSLProtocol'
-      line: 'SSLProtocol TLSv1.2 TLSv1.3'
-  notify: restart httpd
-  when:
-      - apache_cis_7_10
-      - apache_cis_section7
-  tags:
-      - level2
-      - scored
-      - patch
-      - rule_7.10
+# -----------------------------
+# -----------------------------
+# Control 7.10 combined with control 7.4
+# -----------------------------
+# -----------------------------
+# - name: "SCORED | 7.10 | PATCH | Ensure the TLSv1.0 and TLSv1.1 Protocols are Disabled | Set TLSv1.2 and TLSv1.3 RHEL8"
+#   lineinfile:
+#       path: "{{ apache_cis_server_root_dir }}/conf.d/ssl.conf"
+#       regexp: '^#SSLProtocol|^SSLProtocol'
+#       line: 'SSLProtocol TLSv1.2 TLSv1.3'
+#   notify: restart httpd
+#   when: 
+#   when:
+#       - apache_cis_7_10
+#       - apache_cis_section7
+#   tags:
+#       - level2
+#       - scored
+#       - patch
+#       - rule_7.10
 
 
 # -----------------------------

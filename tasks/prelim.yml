@@ -1,13 +1,19 @@
 ---
 - name: Install Apache
   block:
-      - name: Install httpd
+      - name: Install httpd RHEL7 based
         yum:
             name: httpd
             state: present
-        when: ansible_distribution_file_variety == "RedHat"
+        when: ansible_facts.distribution_file_variety == "RedHat" and ansible_facts.distribution_major_version == "7"
 
-      - name: Install Apache
+      - name: Install httpd RHEL8 based
+        dnf:
+            name: httpd
+            state: present
+        when: ansible_facts.distribution_file_variety == "RedHat" and ansible_facts.distribution_major_version == "8"
+
+      - name: Install Apache2
         apt:
             name: apache2
             state: present
@@ -17,7 +23,7 @@
         service:
             name: httpd
             state: started
-        when: ansible_distribution == "RedHat"
+        when: ansible_facts.distribution_file_variety == "RedHat"
 
       - name: Start Apache2
         service:
@@ -26,21 +32,11 @@
         when: ansible_distribution == "Ubuntu"
   when: automate_install
 
-- name: Add additional RHEL repo
-  command: subscription-manager repos --enable rhel-7-server-optional-rpms
-  when:
-      - ansible_distribution == "RedHat"
-      - ansible_distribution_major_version == "7"
-      - template_configs
+# - name: Add additional RHEL repo
+#   command: subscription-manager repos --enable rhel-7-server-optional-rpms
+#   when: ansible_facts.distribution_file_variety == "RedHat" and ansible_facts.distribution_major_version == "7"
 
-- name: Install needed packages RHEL
-  yum:
-      name: ['mod_session', 'mod_ssl', 'apr-util-openssl']
-  when:
-      - ansible_distribution == "RedHat"
-      - template_configs
-
-- name: Install needed packages Ubuntu
+- name: Install needed packages
   block:
       - name: Install RHEL 8 based packages
         dnf:
@@ -50,7 +46,7 @@
 
       - name: Install RHEL 7 based packages
         yum:
-            name: ['mod_session', 'mod_ssl', 'apr-util-openssl', 'python-lxml', 'auditd']
+            name: ['mod_session', 'mod_ssl', 'apr-util-openssl', 'python-lxml, pyOpenSSL, python2-cryptography,libselinux-python,policycoreutils-python']
             state: present
         when: ansible_facts.distribution_file_variety == "RedHat" and ansible_facts.distribution_major_version == "7"
 
