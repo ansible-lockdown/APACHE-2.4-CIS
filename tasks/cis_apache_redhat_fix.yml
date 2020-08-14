@@ -716,9 +716,18 @@
       - rule_4.3
 
 - name: "SCORED | 4.4 | PATCH | Ensure OverRide Is Disabled for All Directories"
-  command: /bin/true
-  changed_when: false
-  failed_when: false
+  block:
+      - name: "SCORED | 4.4 | PATCH | Ensure OverRide Is Disabled for All Directories | Set AllowOverride to None"
+        replace:
+            path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+            regexp: '^    AllowOverride.*'
+            replace: '    AllowOverride None'
+
+      - name: "SCORED | 4.4 | PATCH | Ensure OverRide Is Disabled for All Directories | Remove AllowOverrideList"
+        lineinfile:
+            path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+            regexp: '^    AllowOverrideList'
+            state: absent
   when:
       - apache_cis_4_4
       - apache_cis_section4
