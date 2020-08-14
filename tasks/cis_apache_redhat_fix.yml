@@ -464,10 +464,30 @@
       - patch
       - rule_3.7
 
+# LockFile is no longer the valid parameter, it was replaced with Mutex File
 - name: "SCORED | 3.8 | PATCH | Ensure the Lock File Is Secured"
-  command: /bin/true
-  changed_when: false
-  failed_when: false
+  block:
+      - name: "SCORED | 3.8 | PATCH | Ensure the Lock File Is Secured | Add LockFile directive if needed"
+        lineinfile:
+            path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+            regexp: '^LockFile|^Mutex File'
+            line: 'Mutex File:{{ apache_cis_lockfile_location.rhel }} default'
+            insertafter: '# Supplemental configuration'
+
+      - name: "SCORED | 3.8 | PATCH | Ensure the Lock File Is Secured | Create LockFile in new location and set permissions if does not exist"
+        file:
+            path: "{{ apache_cis_lockfile_location.rhel }}/httpd.lock"
+            owner: root
+            group: root
+            mode: '0750'
+            state: touch
+
+      - name: "SCORED | 3.8 | PATCH | Ensure the Lock File Is Secured | Set LockFile permissions"
+        file:
+            path: "{{ apache_cis_lockfile_location.rhel }}/httpd.lock"
+            owner: root
+            group: root
+            mode: '0750'
   when:
       - apache_cis_3_8
       - apache_cis_section3
@@ -477,7 +497,6 @@
       - scored
       - patch
       - rule_3.8
-      - notimplimented
 
 - name: "SCORED | 3.9 | PATCH | Ensure the Pid File Is Secured"
   block:
@@ -752,12 +771,28 @@
 - name: "SCORED | 5.2 | PATCH | Ensure Options for the Web Root Directory Are Restricted"
   block:
       - name: "SCORED | 5.2 | PATCH | Ensure Options for the Web Root Directory Are Restricted | Get Document Root vHost settings"
-        shell: cat /etc/httpd/conf/httpd.conf | sed -n "/<Directory "{{ apache_cis_doc_root_dir }}">/,/</Directory>/p"
+        raw: cat /etc/httpd/conf/httpd.conf | sed -n "/<Directory \"\/var\/www\/html\">/,/<\/Directory>/p"
         changed_when: false
         failed_when: false
         register: apache_cis_5_2_vdir_doc_settings
 
+      - name: "SCORED | 5.2 | PATCH | Ensure Options for the Web Root Directory Are Restricted | Get Document Root vHost settings"
+        raw: cat /etc/httpd/conf/httpd.conf
+        changed_when: false
+        failed_when: false
+        register: test
+
+      - name: "SCORED | 5.2 | PATCH | Ensure Options for the Web Root Directory Are Restricted | Escape path slashes"
+        set_fact:
+            apache_cis_5_2_doc_root_dir: '{{ apache_cis_doc_root_dir | replace("/","\/") }}'
+
+      # - name: "SCORED | 5.2 | PATCH | Ensure Options for the Web Root Directory Are Restricted | Escape path slashes"
+      #   set_fact:
+      #       test_after: "{{ test | regex_search('<Directory \"\/var\/www\/html\">([\\s\\S]*?)<\/Directory>', multiline=True) }}"
       - debug: var=apache_cis_5_2_vdir_doc_settings
+      - debug: var=apache_cis_5_2_doc_root_dir
+      - debug: var=test_after
+
       - name: "SCORED | 5.2 | PATCH | Ensure Options for the Web Root Directory Are Restricted | Set options to None or Multiviews if options does not exist"
         lineinfile:
             path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
@@ -765,6 +800,13 @@
             insertafter: '^<Directory "{{ apache_cis_doc_root_dir }}>'
         when: "'Options' not in apache_cis_5_2_vdir_doc_settings.stdout"
 
+      - name: "SCORED | 5.2 | PATCH | Ensure Options for the Web Root Directory Are Restricted | Get Document Root vHost settings"
+        shell: cat /etc/httpd/conf/httpd.conf | sed -n "/<Directory "{{ apache_cis_5_2_doc_root_dir }}">/,/<\/Directory>/p"
+        changed_when: false
+        failed_when: false
+        register: apache_cis_5_2_vdir_doc_settings_2222222
+
+      - debug: var=apache_cis_5_2_vdir_doc_settings_2222222
       # - name: "SCORED | 5.2 | PATCH | Ensure Options for the Web Root Directory Are Restricted | Set options to None or Multiviews if options does not exist"
       #   replace:
       #       path: "{{ apache_cis_server_root_dir }}"

@@ -151,6 +151,13 @@ apache_rhel_user: apache
 # apache_rhel_group is the group the apache user will use
 apache_rhel_group: apache
 
+# Control 3.8
+# apache_cis_lockfile_location is the location to the lock file. This can not be the same location as as the DocumentRoot directory. Apache default is ServerRoot/logs
+# The LockFile should be on a locally mounted driver rathare than an NFS mounted file system
+apache_cis_lockfile_location:
+    rhel: "{{ apache_cis_server_root_dir }}/logs"
+    apache: "{{ apache_cis_server_root_dir }}/logs/apache2.lock"
+
 # Section 5 task variables
 # Control 5.2
 # This is the options setting for the web root directory vhost settings. Needs to be None or Multiviews to conform to CIS standards
