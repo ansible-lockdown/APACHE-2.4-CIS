@@ -17,7 +17,7 @@
         apt:
             name: apache2
             state: present
-        when: ansible_distribution_file_variety == "Ubuntu"
+        when: ansible_distribution_file_variety == "Debian"
 
       - name: Start httpd
         service:
@@ -29,7 +29,7 @@
         service:
             name: apache2
             state: started
-        when: ansible_distribution == "Ubuntu"
+        when: ansible_distribution_file_variety == "Debian"
   when: automate_install
 
 # - name: Add additional RHEL repo
@@ -54,7 +54,7 @@
         apt:
             name: ['python-lxml', 'auditd']
             state: present
-        when: ansible_facts.distribution_file_variety == "Debian" and ansible_facts.distribution_major_version == "16"
+        when: ansible_facts.distribution_file_variety == "Debian" and ansible_facts.distribution_major_version == "20"
 
 - name: Get ServerRoot folder
   # shell: cat /etc/httpd/conf/httpd.conf | grep 'ServerRoot "' | cut -f2 -d'"'

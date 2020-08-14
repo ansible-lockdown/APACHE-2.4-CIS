@@ -19,9 +19,9 @@
   tags:
       - RedHat
 
-# - name: Ubuntu Fixes
-#   import_tasks: cis_apache_ubuntu_fix.yml
-#   when:
-#       - ansible_distribution == 'Ubuntu'
-#   tags:
-#       - Ubuntu
+- name: Ubuntu Fixes
+  import_tasks: cis_apache_ubuntu_fix.yml
+  when:
+      - ansible_distribution_file_variety == "Debian"
+  tags:
+      - Ubuntu
