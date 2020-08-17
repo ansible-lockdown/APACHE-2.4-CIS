@@ -20,7 +20,7 @@ apache_cis_skip_for_travis: false
 # We've defined disruption-high to indicate items that are likely to cause
 # disruption in a normal workflow.  These items can be remediated automatically
 # but are disabled by default to avoid disruption.
-apache_cis_disruption_high: false
+apache_cis_disruption_high: true
 
 # This will automate the install of Apache in the prelim tasks
 # If apache is already installed set to false
@@ -139,6 +139,9 @@ apache_cis_12_3: true
 apache_cis_server_root_dir: "{{ apache_cis_server_root_dir_gather.stdout }}"
 apache_cis_doc_root_dir: "{{ apache_cis_doc_root_dir_gather.stdout }}"
 
+# The apache2_cis_server_root_dir is for Debian based systems
+apache2_cis_server_root_dir: "{{ apache2_cis_server_root_dir_gather.stdout }}"
+apache2_cis_doc_root_dir: "{{ apache2_cis_doc_root_dir_gather.stdout }}"
 # Below are the control specific variables
 # Section 1 task variables
 
@@ -148,15 +151,22 @@ apache_cis_doc_root_dir: "{{ apache_cis_doc_root_dir_gather.stdout }}"
 # Control 3.1 variable
 # apache_rhel_user is the user that the appache software will user
 apache_rhel_user: apache
+apache_ubuntu_user: apache
 # apache_rhel_group is the group the apache user will use
 apache_rhel_group: apache
+apache_ubuntu_group: apache
+
+# Control 3.7
+# apache_cis_core_dump_location is the folder for core dumps
+apache_cis_core_dump_location: /var/log/apache2
 
 # Control 3.8
 # apache_cis_lockfile_location is the location to the lock file. This can not be the same location as as the DocumentRoot directory. Apache default is ServerRoot/logs
 # The LockFile should be on a locally mounted driver rathare than an NFS mounted file system
-apache_cis_lockfile_location:
-    rhel: "{{ apache_cis_server_root_dir }}/logs"
-    apache: "{{ apache_cis_server_root_dir }}/logs/apache2.lock"
+# apache_cis_lockfile_location = RHEL based
+# apache2_cis_lockfile_location = Debian based (Ubuntu)
+apache_cis_lockfile_location: "{{ apache_cis_server_root_dir }}/logs"
+apache2_cis_lockfile_location: "/var/lock/apache2"
 
 # Section 5 task variables
 # Control 5.2

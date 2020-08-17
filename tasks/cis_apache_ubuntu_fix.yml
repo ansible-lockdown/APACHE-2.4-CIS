@@ -21,14 +21,14 @@
         command: systemctl list-units --type=service --no-pager
         changed_when: false
         failed_when: false
-        register: apache_ubuntu_1_2_running_services
+        register: apache2_cis_1_2_running_services
 
       - name: "NOTSCORED | 1.2 | AUDIT | Ensure the Server Is Not a Multi-Use System | Display running services"
         debug:
             msg:
                 - "Warning! Below are the running services. Please review"
                 - "Servers should only be single service"
-                - "{{ apache_ubuntu_1_2_running_services.stdout_lines }}"
+                - "{{ apache2_cis_1_2_running_services.stdout_lines }}"
   when:
       - apache_cis_1_2
       - apache_cis_section1
@@ -61,14 +61,14 @@
         shell: apache2ctl -M
         changed_when: false
         failed_when: false
-        register: apache_ubuntu_2_1_loaded_modules
+        register: apache2_cis_2_1_loaded_modules
 
       - name: "NOTSCORED | 2.1 | AUDIT | Ensure Only Necessary Authentication and Authorization Modules Are Enabled | Display Modules"
         debug:
             msg:
                 - "Warning! Below are the installed modules. Please review and remove any un-needed modules"
                 - "Auth Modules:"
-                - "{{ apache_ubuntu_2_1_loaded_modules.stdout_lines }}"
+                - "{{ apache2_cis_2_1_loaded_modules.stdout_lines }}"
   when:
       - apache_cis_2_1
       - apache_cis_section2
@@ -85,14 +85,14 @@
         shell: apachectl -l | grep mod_log_config
         changed_when: false
         failed_when: false
-        register: apache_ubuntu_mod_log_config_state
+        register: apache2_cis_2_2_mod_log_config_state
 
       - name: "SCORED | 2.2 | PATCH | Ensure the Log Config Module Is Enabled | Enable mod_log_config if not enabled"
         command: a2enmod mod_log_config
-        changed_when: apache_ubuntu_mod_log_config_enabled.rc == 0
-        failed_when: apache_ubuntu_mod_log_config_enabled.rc >=1
-        register: apache_ubuntu_mod_log_config_enabled
-        when: apache_ubuntu_mod_log_config_state == ""
+        changed_when: apache2_cis_2_2_mod_log_config_enabled.rc == 0
+        failed_when: apache2_cis_2_2_mod_log_config_enabled.rc >=1
+        register: apache2_cis_2_2_mod_log_config_enabled
+        when: apache2_cis_2_2_mod_log_config_state == ""
   when:
       - apache_cis_2_2
       - apache_cis_section2
@@ -102,3 +102,492 @@
       - scored
       - patch
       - rule_2.2
+
+- name: "SCORED | 2.3 | PATCH | Ensure the WebDAV Modules Are Disabled | Check for enabled WebDAV Module"
+  apache2_module:
+      name: "{{ item }}"
+      state: absent
+      force: yes
+  with_items:
+      - dav_fs
+      - dav
+      - dav_lock
+  notify: restart apache2
+  when:
+      - apache_cis_2_3
+      - apache_cis_section2
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_2.3
+
+- name: "SCORED | 2.4 | PATCH | Ensure the Status Module Is Disabled"
+  apache2_module:
+      name: status
+      state: absent
+      force: yes
+  notify: restart apache2
+  when:
+      - apache_cis_2_4
+      - apache_cis_section2
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_2.4
+
+- name: "SCORED | 2.5 | PATCH | Ensure the Autoindex Module Is Disabled"
+  apache2_module:
+      name: autoindex
+      state: absent
+      force: yes
+  notify: restart apache2
+  when:
+      - apache_cis_2_5
+      - apache_cis_section2
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_2.5
+
+- name: "SCORED | 2.6 | PATCH | Ensure the Proxy Modules Are Disabled"
+  apache2_module:
+      name: "{{ item }}"
+      state: absent
+      force: yes
+  with_items:
+      - proxy_ajp
+      - proxy_balancer
+      - proxy
+      - proxy_connect
+      - proxy_express
+      - proxy_fcgi
+      - proxy_fdpass
+      - proxy_ftp
+      - proxy_hcheck
+      - proxy_html
+      - proxy_http2
+      - proxy_http
+      - proxy_scgi
+      - proxy_uwsgi
+      - proxy_wstunnel
+  notify: restart apache2
+  when:
+      - apache_cis_2_6
+      - apache_cis_section2
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_2.6
+
+- name: "SCORED | 2.7 | PATCH | Ensure the User Directories Module Is Disabled"
+  apache2_module:
+      name: userdir
+      state: absent
+      force: yes
+  notify: restart apache2
+  when:
+      - apache_cis_2_7
+      - apache_cis_section2
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_2.7
+
+- name: "SCORED | 2.8 | PATCH | Ensure the Info Module Is Disabled"
+  apache2_module:
+      name: info
+      state: absent
+      force: yes
+  notify: restart apache2
+  when:
+      - apache_cis_2_8
+      - apache_cis_section2
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_2.8
+
+- name: "SCORED | 2.9 | PATCH | Ensure the Basic and Digest Authentication Modules are Disabled"
+  apache2_module:
+      name: "{{ item }}"
+      state: absent
+      force: yes
+  with_items:
+      - auth_basic
+      - auth_digest
+  notify: restart apache2
+  when:
+      - apache_cis_2_9
+      - apache_cis_section2
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_2.9
+
+- name: "SCORED | 3.1 | PATCH | Ensure the Apache Web Server Runs As a Non-Root User"
+  block:
+      - name: "SCORED | 3.1 | AUDIT | Ensure the Apache Web Server Runs As a Non-Root User | Get configured user block"
+        block:
+            - name: "SCORED | 3.1 | AUDIT | Ensure the Apache Web Server Runs As a Non-Root User | Get configured user"
+              shell: ps aux | grep apache
+              changed_when: false
+              failed_when: false
+              register: apache2_cis_3_1_configured_user_group
+      
+            - name: "SCORED | 3.1 | AUDIT | Ensure the Apache Web Server Runs As a Non-Root User | Warn about user"
+              debug:
+                  msg:
+                      - "Warning! Below is the user and group for the apache service"
+                      - "Please review to confirm it is a non-root user"
+                      - "This task did not change the user information due to apache_cis_disruption_high being set to false"
+                      - "Set that parameter to true and this task will create the user/group and configure as needed"
+                      - "{{ apache2_cis_3_1_configured_user_group.stdout_lines }}"
+              when: not apache_cis_disruption_high
+
+      - name: "SCORED | 3.1 | PATCH | Ensure the Apache Web Server Runs As a Non-Root User"
+        block:
+            - name: "SCORED | 3.1 | PATCH | Ensure the Apache Web Server Runs As a Non-Root User | Stop apache service"
+              service:
+                  name: apache2
+                  state: stopped
+
+            - name: "SCORED | 3.1 | PATCH | Ensure the Apache Web Server Runs As a Non-Root User | Create Apache group"
+              group:
+                  name: "{{ apache_ubuntu_group }}"
+                  system: yes
+                  state: present
+
+            - name: "SCORED | 3.1 | PATCH | Ensure the Apache Web Server Runs As a Non-Root User | Create Apache user"
+              user:
+                  name: "{{ apache_ubuntu_user }}"
+                  system: yes
+                  group: "{{ apache_ubuntu_group }}"
+                  home: /var/www
+                  shell: /sbin/nologin
+
+            - name: "SCORED | 3.1 | PATCH | Ensure the Apache Web Server Runs As a Non-Root User | Add user to configs"
+              replace:
+                  path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+                  regexp: "{{ item.regexp }}"
+                  replace: "{{ item.replace }}"
+              with_items:
+                  - { regexp: 'User .*', replace: 'User {{ apache_ubuntu_user }}' }
+                  - { regexp: 'Group .*', replace: 'Group {{ apache_ubuntu_group }}' }
+            - name: "SCORED | 3.1 | PATCH | Ensure the Apache Web Server Runs As a Non-Root User | Start apache service"
+              service:
+                  name: apache2
+                  state: started
+        when: apache_cis_disruption_high
+  when:
+      - apache_cis_3_1
+      - apache_cis_section3
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_3.1
+
+- name: "SCORED | 3.2 | PATCH | Ensure the Apache User Account Has an Invalid Shell"
+  user:
+      name: "{{ apache_ubuntu_user }}"
+      shell: /sbin/nologin
+  when:
+      - apache_cis_3_2
+      - apache_cis_section3
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_3.2
+
+- name: "SCORED | 3.3 | PATCH | Ensure the Apache User Account Is Locked"
+  user:
+      name: "{{ apache_ubuntu_user }}"
+      password_lock: yes
+  when:
+      - apache_cis_3_3
+      - apache_cis_section3
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_3.3
+
+# -----------------------------
+# -----------------------------
+# Confirm /etc/httpd only folder we need to adjust
+# -----------------------------
+# -----------------------------
+- name: "SCORED | 3.4 | PATCH | Ensure Apache Directories and Files Are Owned By Root"
+  file:
+      name: "{{ apache2_cis_server_root_dir }}"
+      owner: root
+      recurse: yes
+  when:
+      - apache_cis_3_4
+      - apache_cis_section3
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_3.4
+
+# -----------------------------
+# -----------------------------
+# Confirm /etc/httpd only folder we need to adjust
+# -----------------------------
+# -----------------------------
+
+- name: "SCORED | 3.5 | PATCH | Ensure the Group Is Set Correctly on Apache Directories and Files"
+  file:
+      name: "{{ apache2_cis_server_root_dir }}"
+      group: root
+      recurse: yes
+  when:
+      - apache_cis_3_5
+      - apache_cis_section3
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_3.5
+
+- name: "SCORED | 3.6 | PATCH | Ensure Other Write Access on Apache Directories and Files Is Restricted"
+  file:
+      name: "{{ apache2_cis_server_root_dir }}"
+      mode: o-w
+      recurse: yes
+  when:
+      - apache_cis_3_6
+      - apache_cis_section3
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_3.6
+
+- name: "SCORED | 3.7 | PATCH | Ensure the Core Dump Directory Is Secured"
+  block:
+      - name: "SCORED | 3.7 | AUDIT | Ensure the Core Dump Directory Is Secured | Find if CoreDumpDirectory is used"
+        shell: cat {{ apache2_cis_server_root_dir }}/apache2.conf | grep "CoreDumpDirectory" | cut -f2 -d " "
+        changed_when: false
+        failed_when: false
+        register: apache2_cis_3_7_coredumpdirectory
+
+      # - name: "SCORED | 3.7 | AUDIT | Ensure the Core Dump Directory Is Secured | Find Web Document Root Dir"
+      #   shell: cat {{ apache2_cis_server_root_dir }}/apache2.conf | grep "DocumentRoot " | cut -f2 -d'"'
+      #   changed_when: false
+      #   failed_when: false
+      #   register: apache_ubuntu_3_7_docrootdir
+
+      - name: "SCORED | 3.7 | AUDIT | Ensure the Core Dump Directory Is Secured | Message if CoreDumpDirectory is Web Document Root Dir"
+        debug:
+            msg: "WARNING!! Your CoreDumpDirectory is using the Web Document Root directory: {{ apache2_cis_3_7_coredumpdirectory.stdout }}"
+        when: 
+            - apache2_cis_3_7_coredumpdirectory.stdout == apache2_cis_doc_root_dir
+
+      - name: "SCORED | 3.7 | PATCH | Ensure the Core Dump Directory Is Secured | Set CoreDumpDirectory in apache2.conf"
+        lineinfile:
+            path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+            regexp: '^CoreDumpDirectory '
+            line: 'CoreDumpDirectory {{ apache_cis_core_dump_location }}'
+        notify: restart apache2
+        when: apache2_cis_3_7_coredumpdirectory.stdout == ""
+
+      - name: "SCORED | 3.7 | PATCH | Ensure the Core Dump Directory Is Secured"
+        file:
+            name: "{{ apache_cis_core_dump_location }}"
+            owner: root
+            group: apache
+            mode: o-rwx
+            recurse: yes
+  when:
+      - apache_cis_3_7
+      - apache_cis_section3
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_3.7
+
+# LockFile is no longer the valid parameter, it was replaced with Mutex File
+- name: "SCORED | 3.8 | PATCH | Ensure the Lock File Is Secured"
+  block:
+      - name: "SCORED | 3.8 | PATCH | Ensure the Lock File Is Secured | Add LockFile directive if needed"
+        lineinfile:
+            path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+            regexp: '^LockFile|^Mutex File'
+            line: 'Mutex File:{{ apache2_cis_lockfile_location }} default'
+            insertafter: '# Supplemental configuration'
+        notify: restart apache2
+
+      - name: "SCORED | 3.8 | PATCH | Ensure the Lock File Is Secured | Create LockFile in new location and set permissions if does not exist"
+        file:
+            path: "{{ apache2_cis_lockfile_location }}/apache2.lock"
+            owner: root
+            group: root
+            mode: '0750'
+            state: touch
+
+      - name: "SCORED | 3.8 | PATCH | Ensure the Lock File Is Secured | Set LockFile permissions"
+        file:
+            path: "{{ apache2_cis_lockfile_location }}/apache2.lock"
+            owner: root
+            group: root
+            mode: '0750'
+  when:
+      - apache_cis_3_8
+      - apache_cis_section3
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_3.8
+
+- name: "SCORED | 3.9 | PATCH | Ensure the Pid File Is Secured"
+  block:
+      - name: "SCORED | 3.9 | AUDIT | Ensure the Pid File Is Secured | Get PID location"
+        shell: find / -name apache2.pid
+        changed_when: false
+        failed_when: false
+        register: apache2_cis_3_9_apache2_pid_loc
+
+      - name: "SCORED | 3.9 | PATCH | Ensure the Pid File Is Secured | Set permissions"
+        file:
+            path: "{{ apache2_cis_3_9_apache2_pid_loc.stdout }}"
+            owner: root
+            group: root
+            mode: o-w,g-w
+
+      - name: "SCORED | 3.9 | AUDIT | Ensure the Pid File Is Secured | Warn if PID is in DocumentRoot dir"
+        debug:
+            msg:
+                - "WARNING!! Your PID file is in the DocumentRoot directory, to confirm with this STIG control"
+                - "please move to another folder that is not within the Document root directory ({{ apache2_cis_doc_root_dir.stdout }})"
+        when: apache2_cis_doc_root_dir == apache2_cis_3_9_apache2_pid_loc.stdout
+  when:
+      - apache_cis_3_9
+      - apache_cis_section3
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_3.9
+
+# -----------------------------
+# -----------------------------
+# Missing last step to confirm ScoreBoardFile location is not on an externally mounted NFS system. Need to review how to do that
+# -----------------------------
+# -----------------------------
+- name: "SCORED | 3.10 | PATCH | Ensure the ScoreBoard File Is Secured"
+  block:
+      - name: "SCORED | 3.10 | AUDIT | Ensure the ScoreBoard File Is Secured | Check if ScoreBoardFile is in use"
+        shell: cat {{ apache2_cis_server_root_dir }}/apache2.conf | grep ScoreBoardFile | cut -f2 -d" "
+        changed_when: false
+        failed_when: false
+        register: apache2_cis_3_10_scoreboardfile
+
+      - name: "SCORED | 3.10 | AUDIT | Ensure the ScoreBoard File Is Secured | Warn if the same as DocumentRoot"
+        debug:
+            msg:
+                - "WARNING!! The ScoreBoardFile parameter is in use using the DocumentRoot location"
+                - "This does not conform to CIS standars. Please change the ScoreBoardFile location in {{ apache2_cis_server_root_dir }}/apache2.conf"
+        when: 
+            - '"{{ apache2_cis_doc_root_dir }}" in apache2_cis_3_10_scoreboardfile.stdout'
+
+      - name: "SCORED | 3.10 | PATCH | Ensure the ScoreBoard File Is Secured | Update file permissions"
+        file:
+            path: "{{ apache2_cis_3_10_scoreboardfile.stdout }}"
+            owner: root
+            group: root
+            mode: o-w,g-w
+        when: apache2_cis_3_10_scoreboardfile.stdout != ""
+  when:
+      - apache_cis_3_10
+      - apache_cis_section3
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_3.10
+      - notimplimented
+
+# -----------------------------
+# -----------------------------
+# Confirm /etc/httpd only folder we need to adjust
+# -----------------------------
+# -----------------------------
+- name: "SCORED | 3.11 | PATCH | Ensure Group Write Access for the Apache Directories and Files Is Properly Restricted"
+  file:
+      path: "{{ apache2_cis_server_root_dir }}"
+      mode: g-w
+      recurse: yes
+  when:
+      - apache_cis_3_11
+      - apache_cis_section3
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_3.11
+
+- name: "SCORED | 3.12 | PATCH | Ensure Group Write Access for the Document Root Directories and Files Is Properly Restricted"
+  file:
+      path: "{{ apache2_cis_doc_root_dir }}"
+      mode: g-w
+      recurse: yes
+  when:
+      - apache_cis_3_12
+      - apache_cis_section3
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_3.12
+
+# -----------------------------
+# -----------------------------
+# Control 3.13 circle back since I'm not sure what is needed here. You are setting values but I can't figure out where those configurations are located
+# -----------------------------
+# -----------------------------
+
+- name: "NOTSCORED | 3.13 | PATCH | Ensure Access to Special Purpose Application Writable Directories is Properly Restricted"
+  command: /bin/true
+  changed_when: false
+  failed_when: false
+  when:
+      - apache_cis_3_13
+      - apache_cis_section3
+  tags:
+      - level1
+      - level2
+      - notscored
+      - patch
+      - rule_3.13
+      - notimplimented

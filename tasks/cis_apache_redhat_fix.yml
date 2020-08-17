@@ -480,12 +480,12 @@
         lineinfile:
             path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
             regexp: '^LockFile|^Mutex File'
-            line: 'Mutex File:{{ apache_cis_lockfile_location.rhel }} default'
+            line: 'Mutex File:{{ apache_cis_lockfile_location }} default'
             insertafter: '# Supplemental configuration'
 
       - name: "SCORED | 3.8 | PATCH | Ensure the Lock File Is Secured | Create LockFile in new location and set permissions if does not exist"
         file:
-            path: "{{ apache_cis_lockfile_location.rhel }}/httpd.lock"
+            path: "{{ apache_cis_lockfile_location }}/httpd.lock"
             owner: root
             group: root
             mode: '0750'
@@ -493,7 +493,7 @@
 
       - name: "SCORED | 3.8 | PATCH | Ensure the Lock File Is Secured | Set LockFile permissions"
         file:
-            path: "{{ apache_cis_lockfile_location.rhel }}/httpd.lock"
+            path: "{{ apache_cis_lockfile_location }}/httpd.lock"
             owner: root
             group: root
             mode: '0750'

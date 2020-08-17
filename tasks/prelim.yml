@@ -57,17 +57,37 @@
         when: ansible_facts.distribution_file_variety == "Debian" and ansible_facts.distribution_major_version == "20"
 
 - name: Get ServerRoot folder
-  # shell: cat /etc/httpd/conf/httpd.conf | grep 'ServerRoot "' | cut -f2 -d'"'
-  shell: grep 'ServerRoot "' /etc/httpd/conf/httpd.conf | cut -f2 -d'"'
-  changed_when: false
-  failed_when: false
-  register: apache_cis_server_root_dir_gather
+  block:
+      - name: Get ServerRoot folder RHEL
+        shell: grep 'ServerRoot "' /etc/httpd/conf/httpd.conf | cut -f2 -d'"'
+        changed_when: false
+        failed_when: false
+        register: apache_cis_server_root_dir_gather
+        when: ansible_facts.distribution_file_variety == "RedHat"
+
+      - name: Get ServerRoot folder Ubuntu
+        shell: find / -name "apache2.conf" | sed 's|\(.*\)/.*|\1|'
+        changed_when: false
+        failed_when: false
+        register: apache2_cis_server_root_dir_gather
+        when: ansible_facts.distribution_file_variety == "Debian" 
+      - debug: var=apache2_cis_server_root_dir_gather
 
 - name: Get DocumentRoot folder
-  shell: cat /etc/httpd/conf/httpd.conf | grep "DocumentRoot " | cut -f2 -d'"'
-  changed_when: false
-  failed_when: false
-  register: apache_cis_doc_root_dir_gather
+  block:
+      - name: Get DocumentRoot folder RHEL
+        shell: cat /etc/httpd/conf/httpd.conf | grep "DocumentRoot " | cut -f2 -d'"'
+        changed_when: false
+        failed_when: false
+        register: apache_cis_doc_root_dir_gather
+        when: ansible_facts.distribution_file_variety == "RedHat"
+
+      - name: Get DocumentRoot folder
+        shell: grep "DocumentRoot" /etc/apache2/sites-available/000-default.conf | sed 's/^[ \t]*//;s/[ \t]*$//' | sed 's|\(.*\)/.*|\1|' | cut -f2 -d" "
+        changed_when: false
+        failed_when: false
+        register: apache2_cis_doc_root_dir_gather
+        when: ansible_facts.distribution_file_variety == "Debian"
 
 - name: Install policycoreutils-python-utils
   block:
