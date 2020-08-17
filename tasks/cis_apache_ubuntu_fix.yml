@@ -21,14 +21,14 @@
         command: systemctl list-units --type=service --no-pager
         changed_when: false
         failed_when: false
-        register: apache2_cis_1_2_running_services
+        register: apache_ubuntu_1_2_running_services
 
       - name: "NOTSCORED | 1.2 | AUDIT | Ensure the Server Is Not a Multi-Use System | Display running services"
         debug:
             msg:
                 - "Warning! Below are the running services. Please review"
                 - "Servers should only be single service"
-                - "{{ apache2_cis_1_2_running_services.stdout_lines }}"
+                - "{{ apache_ubuntu_1_2_running_services.stdout_lines }}"
   when:
       - apache_cis_1_2
       - apache_cis_section1
@@ -61,14 +61,14 @@
         shell: apache2ctl -M
         changed_when: false
         failed_when: false
-        register: apache2_cis_2_1_loaded_modules
+        register: apache_ubuntu_2_1_loaded_modules
 
       - name: "NOTSCORED | 2.1 | AUDIT | Ensure Only Necessary Authentication and Authorization Modules Are Enabled | Display Modules"
         debug:
             msg:
                 - "Warning! Below are the installed modules. Please review and remove any un-needed modules"
                 - "Auth Modules:"
-                - "{{ apache2_cis_2_1_loaded_modules.stdout_lines }}"
+                - "{{ apache_ubuntu_2_1_loaded_modules.stdout_lines }}"
   when:
       - apache_cis_2_1
       - apache_cis_section2
@@ -85,14 +85,14 @@
         shell: apachectl -l | grep mod_log_config
         changed_when: false
         failed_when: false
-        register: apache2_cis_2_2_mod_log_config_state
+        register: apache_ubuntu_2_2_mod_log_config_state
 
       - name: "SCORED | 2.2 | PATCH | Ensure the Log Config Module Is Enabled | Enable mod_log_config if not enabled"
         command: a2enmod mod_log_config
-        changed_when: apache2_cis_2_2_mod_log_config_enabled.rc == 0
-        failed_when: apache2_cis_2_2_mod_log_config_enabled.rc >=1
-        register: apache2_cis_2_2_mod_log_config_enabled
-        when: apache2_cis_2_2_mod_log_config_state == ""
+        changed_when: apache_ubuntu_2_2_mod_log_config_enabled.rc == 0
+        failed_when: apache_ubuntu_2_2_mod_log_config_enabled.rc >=1
+        register: apache_ubuntu_2_2_mod_log_config_enabled
+        when: apache_ubuntu_2_2_mod_log_config_state == ""
   when:
       - apache_cis_2_2
       - apache_cis_section2
@@ -238,6 +238,7 @@
       - patch
       - rule_2.9
 
+# Section 3 Fixes
 - name: "SCORED | 3.1 | PATCH | Ensure the Apache Web Server Runs As a Non-Root User"
   block:
       - name: "SCORED | 3.1 | AUDIT | Ensure the Apache Web Server Runs As a Non-Root User | Get configured user block"
@@ -246,7 +247,7 @@
               shell: ps aux | grep apache
               changed_when: false
               failed_when: false
-              register: apache2_cis_3_1_configured_user_group
+              register: apache_ubuntu_3_1_configured_user_group
       
             - name: "SCORED | 3.1 | AUDIT | Ensure the Apache Web Server Runs As a Non-Root User | Warn about user"
               debug:
@@ -255,7 +256,7 @@
                       - "Please review to confirm it is a non-root user"
                       - "This task did not change the user information due to apache_cis_disruption_high being set to false"
                       - "Set that parameter to true and this task will create the user/group and configure as needed"
-                      - "{{ apache2_cis_3_1_configured_user_group.stdout_lines }}"
+                      - "{{ apache_ubuntu_3_1_configured_user_group.stdout_lines }}"
               when: not apache_cis_disruption_high
 
       - name: "SCORED | 3.1 | PATCH | Ensure the Apache Web Server Runs As a Non-Root User"
@@ -392,7 +393,7 @@
         shell: cat {{ apache2_cis_server_root_dir }}/apache2.conf | grep "CoreDumpDirectory" | cut -f2 -d " "
         changed_when: false
         failed_when: false
-        register: apache2_cis_3_7_coredumpdirectory
+        register: apache_ubuntu_3_7_coredumpdirectory
 
       # - name: "SCORED | 3.7 | AUDIT | Ensure the Core Dump Directory Is Secured | Find Web Document Root Dir"
       #   shell: cat {{ apache2_cis_server_root_dir }}/apache2.conf | grep "DocumentRoot " | cut -f2 -d'"'
@@ -402,9 +403,9 @@
 
       - name: "SCORED | 3.7 | AUDIT | Ensure the Core Dump Directory Is Secured | Message if CoreDumpDirectory is Web Document Root Dir"
         debug:
-            msg: "WARNING!! Your CoreDumpDirectory is using the Web Document Root directory: {{ apache2_cis_3_7_coredumpdirectory.stdout }}"
+            msg: "WARNING!! Your CoreDumpDirectory is using the Web Document Root directory: {{ apache_ubuntu_3_7_coredumpdirectory.stdout }}"
         when: 
-            - apache2_cis_3_7_coredumpdirectory.stdout == apache2_cis_doc_root_dir
+            - apache_ubuntu_3_7_coredumpdirectory.stdout == apache2_cis_doc_root_dir
 
       - name: "SCORED | 3.7 | PATCH | Ensure the Core Dump Directory Is Secured | Set CoreDumpDirectory in apache2.conf"
         lineinfile:
@@ -412,7 +413,7 @@
             regexp: '^CoreDumpDirectory '
             line: 'CoreDumpDirectory {{ apache_cis_core_dump_location }}'
         notify: restart apache2
-        when: apache2_cis_3_7_coredumpdirectory.stdout == ""
+        when: apache_ubuntu_3_7_coredumpdirectory.stdout == ""
 
       - name: "SCORED | 3.7 | PATCH | Ensure the Core Dump Directory Is Secured"
         file:
@@ -472,11 +473,11 @@
         shell: find / -name apache2.pid
         changed_when: false
         failed_when: false
-        register: apache2_cis_3_9_apache2_pid_loc
+        register: apache_ubuntu_3_9_apache2_pid_loc
 
       - name: "SCORED | 3.9 | PATCH | Ensure the Pid File Is Secured | Set permissions"
         file:
-            path: "{{ apache2_cis_3_9_apache2_pid_loc.stdout }}"
+            path: "{{ apache_ubuntu_3_9_apache2_pid_loc.stdout }}"
             owner: root
             group: root
             mode: o-w,g-w
@@ -486,7 +487,7 @@
             msg:
                 - "WARNING!! Your PID file is in the DocumentRoot directory, to confirm with this STIG control"
                 - "please move to another folder that is not within the Document root directory ({{ apache2_cis_doc_root_dir.stdout }})"
-        when: apache2_cis_doc_root_dir == apache2_cis_3_9_apache2_pid_loc.stdout
+        when: apache2_cis_doc_root_dir == apache_ubuntu_3_9_apache2_pid_loc.stdout
   when:
       - apache_cis_3_9
       - apache_cis_section3
@@ -508,7 +509,7 @@
         shell: cat {{ apache2_cis_server_root_dir }}/apache2.conf | grep ScoreBoardFile | cut -f2 -d" "
         changed_when: false
         failed_when: false
-        register: apache2_cis_3_10_scoreboardfile
+        register: apache_ubuntu_3_10_scoreboardfile
 
       - name: "SCORED | 3.10 | AUDIT | Ensure the ScoreBoard File Is Secured | Warn if the same as DocumentRoot"
         debug:
@@ -516,15 +517,15 @@
                 - "WARNING!! The ScoreBoardFile parameter is in use using the DocumentRoot location"
                 - "This does not conform to CIS standars. Please change the ScoreBoardFile location in {{ apache2_cis_server_root_dir }}/apache2.conf"
         when: 
-            - '"{{ apache2_cis_doc_root_dir }}" in apache2_cis_3_10_scoreboardfile.stdout'
+            - '"{{ apache2_cis_doc_root_dir }}" in apache_ubuntu_3_10_scoreboardfile.stdout'
 
       - name: "SCORED | 3.10 | PATCH | Ensure the ScoreBoard File Is Secured | Update file permissions"
         file:
-            path: "{{ apache2_cis_3_10_scoreboardfile.stdout }}"
+            path: "{{ apache_ubuntu_3_10_scoreboardfile.stdout }}"
             owner: root
             group: root
             mode: o-w,g-w
-        when: apache2_cis_3_10_scoreboardfile.stdout != ""
+        when: apache_ubuntu_3_10_scoreboardfile.stdout != ""
   when:
       - apache_cis_3_10
       - apache_cis_section3
@@ -591,3 +592,129 @@
       - patch
       - rule_3.13
       - notimplimented
+
+# Section 4 Fixes
+- name: "SCORED | 4.1 | PATCH | Ensure Access to OS Root Directory Is Denied By Default"
+  block:
+      - name: "SCORED | 4.1 | AUDIT | Ensure Access to OS Root Directory Is Denied By Default | Get Root Directory"
+        shell: cat {{ apache2_cis_server_root_dir }}/apache2.conf | sed -n '/<Directory \//,/<\/Directory/p'
+        changed_when: false
+        failed_when: false
+        register: apache_ubuntu_4_1_root_directory
+
+      - name: "SCORED | 4.1 | PATCH | Ensure Access to OS Root Directory Is Denied By Default | Repace Require if exists"
+        replace:
+            path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+            regexp: '    Require .*'
+            replace: '    Require all denied'
+            after: '<Directory />'
+            before: '</Directory>'
+        notify: restart apache2
+        when: '"Require" in apache_ubuntu_4_1_root_directory.stdout'
+
+      - name: "SCORED | 4.1 | PATCH | Ensure Access to OS Root Directory Is Denied By Default | Enter Require if it doesn't exist"
+        lineinfile:
+            path: "{{ apache_cis_server_root_dir }}/apache2.conf"
+            regexp: '<Directory />'
+            line: |
+                <Directory />
+                    Require all denied
+        notify: restart apache2
+        when: '"Require" not in apache_ubuntu_4_1_root_directory.stdout'
+  when:
+      - apache_cis_4_1
+      - apache_cis_section4
+  tags:
+      - level1
+      - level2
+      - patch
+      - rule_4.1
+
+# -----------------------------
+# -----------------------------
+# Control 4.2 requires dynamic changes to all <Directory> and <Location> elements. Need to figure out best lineinfile way to handle this
+# -----------------------------
+# -----------------------------
+
+- name: "NOTSCORED | 4.2 | PATCH | Ensure Appropriate Access to Web Content Is Allowed"
+  command: /bin/true
+  changed_when: false
+  failed_when: false
+  when:
+      - apache_cis_4_2
+      - apache_cis_section4
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_4.2
+      - notimplimented
+
+- name: "SCORED | 4.3 | PATCH | Ensure OverRide Is Disabled for the OS Root Directory"
+  block:
+      - name: "SCORED | 4.3 | AUDIT | Ensure OverRide Is Disabled for the OS Root Directory | Get Root Directory"
+        shell: cat {{ apache2_cis_server_root_dir }}/apache2.conf | sed -n '/<Directory \//,/<\/Directory/p'
+        changed_when: false
+        failed_when: false
+        register: apache_ubuntu_4_3_root_directory
+
+      - name: "SCORED | 4.3 | PATCH | Ensure OverRide Is Disabled for the OS Root Directory | Repace AllowOverride if exists"
+        replace:
+            path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+            regexp: '    AllowOverride .*'
+            replace: '    AllowOverride None'
+            after: '<Directory />'
+            before: '</Directory>'
+        notify: restart apache2
+        when: '"AllowOverride" in apache_ubuntu_4_3_root_directory.stdout'
+
+      - name: "SCORED | 4.3 | PATCH | Ensure OverRide Is Disabled for the OS Root Directory | Enter AllowOverride if it doesn't exist"
+        lineinfile:
+            path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+            regexp: '<Directory />'
+            line: |
+                <Directory />
+                    AllowOverride None
+        notify: restart apache2
+        when: '"AllowOverride" not in apache_ubuntu_4_3_root_directory.stdout'
+
+      - name: "SCORED | 4.3 | PATCH | Ensure OverRide Is Disabled for the OS Root Directory | Remove AllowOverrideList element"
+        lineinfile:
+            path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+            regexp: 'AllowOverrideList .*'
+            state: absent
+        notify: restart apache2
+  when:
+      - apache_cis_4_3
+      - apache_cis_section4
+  tags:
+      - level1
+      - level2
+      - patch
+      - rule_4.3
+
+- name: "SCORED | 4.4 | PATCH | Ensure OverRide Is Disabled for All Directories"
+  block:
+      - name: "SCORED | 4.4 | PATCH | Ensure OverRide Is Disabled for All Directories | Set AllowOverride to None"
+        replace:
+            path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+            regexp: '^    AllowOverride.*'
+            replace: '    AllowOverride None'
+        notify: restart apache2
+
+      - name: "SCORED | 4.4 | PATCH | Ensure OverRide Is Disabled for All Directories | Remove AllowOverrideList"
+        lineinfile:
+            path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+            regexp: '^    AllowOverrideList'
+            state: absent
+        notify: restart apache2
+  when:
+      - apache_cis_4_4
+      - apache_cis_section4
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_4.4
