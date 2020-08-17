@@ -597,7 +597,7 @@
 - name: "SCORED | 4.1 | PATCH | Ensure Access to OS Root Directory Is Denied By Default"
   block:
       - name: "SCORED | 4.1 | AUDIT | Ensure Access to OS Root Directory Is Denied By Default | Get Root Directory"
-        shell: cat {{ apache2_cis_server_root_dir }}/apache2.conf | sed -n '/<Directory \//,/<\/Directory/p'
+        shell: cat {{ apache2_cis_server_root_dir }}/apache2.conf | sed -n '/<Directory \/>/,/<\/Directory/p'
         changed_when: false
         failed_when: false
         register: apache_ubuntu_4_1_root_directory
@@ -605,8 +605,8 @@
       - name: "SCORED | 4.1 | PATCH | Ensure Access to OS Root Directory Is Denied By Default | Repace Require if exists"
         replace:
             path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
-            regexp: '    Require .*'
-            replace: '    Require all denied'
+            regexp: 'Require .*'
+            replace: 'Require all denied'
             after: '<Directory />'
             before: '</Directory>'
         notify: restart apache2
@@ -618,7 +618,7 @@
             regexp: '<Directory />'
             line: |
                 <Directory />
-                    Require all denied
+                        Require all denied
         notify: restart apache2
         when: '"Require" not in apache_ubuntu_4_1_root_directory.stdout'
   when:
@@ -654,7 +654,7 @@
 - name: "SCORED | 4.3 | PATCH | Ensure OverRide Is Disabled for the OS Root Directory"
   block:
       - name: "SCORED | 4.3 | AUDIT | Ensure OverRide Is Disabled for the OS Root Directory | Get Root Directory"
-        shell: cat {{ apache2_cis_server_root_dir }}/apache2.conf | sed -n '/<Directory \//,/<\/Directory/p'
+        shell: cat {{ apache2_cis_server_root_dir }}/apache2.conf | sed -n '/<Directory \/>/,/<\/Directory/p'
         changed_when: false
         failed_when: false
         register: apache_ubuntu_4_3_root_directory
@@ -662,8 +662,8 @@
       - name: "SCORED | 4.3 | PATCH | Ensure OverRide Is Disabled for the OS Root Directory | Repace AllowOverride if exists"
         replace:
             path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
-            regexp: '    AllowOverride .*'
-            replace: '    AllowOverride None'
+            regexp: 'AllowOverride .*'
+            replace: 'AllowOverride None'
             after: '<Directory />'
             before: '</Directory>'
         notify: restart apache2
@@ -675,7 +675,7 @@
             regexp: '<Directory />'
             line: |
                 <Directory />
-                    AllowOverride None
+                        AllowOverride None
         notify: restart apache2
         when: '"AllowOverride" not in apache_ubuntu_4_3_root_directory.stdout'
 
@@ -699,14 +699,14 @@
       - name: "SCORED | 4.4 | PATCH | Ensure OverRide Is Disabled for All Directories | Set AllowOverride to None"
         replace:
             path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
-            regexp: '^    AllowOverride.*'
-            replace: '    AllowOverride None'
+            regexp: 'AllowOverride.*'
+            replace: 'AllowOverride None'
         notify: restart apache2
 
       - name: "SCORED | 4.4 | PATCH | Ensure OverRide Is Disabled for All Directories | Remove AllowOverrideList"
         lineinfile:
             path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
-            regexp: '^    AllowOverrideList'
+            regexp: '^        AllowOverrideList'
             state: absent
         notify: restart apache2
   when:
@@ -718,3 +718,527 @@
       - scored
       - patch
       - rule_4.4
+
+# Section 5 Fixes
+- name: "SCORED | 5.1 | PATCH | Ensure Options for the OS Root Directory Are Restricted"
+  block:
+      - name: "SCORED | 5.1 | AUDIT | Ensure Options for the OS Root Directory Are Restricted | Get Root Directory Settings"
+        shell: cat {{ apache2_cis_server_root_dir }}/apache2.conf | sed -n '/<Directory \/>/,/<\/Directory>/p'
+        changed_when: false
+        failed_when: false
+        register: apache_ubuntu_5_1_root_directory
+
+      - name: "SCORED | 5.1 | PATCH | Ensure Options for the OS Root Directory Are Restricted | Replace if Options exist"
+        replace:
+            path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+            regexp: 'Options.*'
+            replace: 'Options None'
+            after: '<Directory />'
+            before: '</Directory>'
+        notify: restart apache2
+        when: '"Options" in apache_ubuntu_5_1_root_directory.stdout'
+
+      - name: "SCORED | 5.1 | PATCH | Ensure Options for the OS Root Directory Are Restricted | Enter Options if doesn't exist"
+        lineinfile:
+            path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+            regexp: '<Directory />'
+            line: |
+                <Directory />
+                         Options None
+        notify: restart apache2
+        when: '"Options" not in apache_ubuntu_5_1_root_directory.stdout'
+  when:
+      - apache_cis_5_1
+      - apache_cis_section5
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_5.1
+
+- name: "SCORED | 5.2 | PATCH | Ensure Options for the Web Root Directory Are Restricted"
+  block:
+      - name: "SCORED | 5.2 | PATCH | Ensure Options for the Web Root Directory Are Restricted | Get Document Root vHost settings"
+        raw: cat /etc/apache2/apache2.conf | sed -n "/<Directory \"\/var\/www\/html\">/,/<\/Directory>/p"
+        changed_when: false
+        failed_when: false
+        register: apache_rhel_5_2_vdir_doc_settings
+
+      - name: "SCORED | 5.2 | PATCH | Ensure Options for the Web Root Directory Are Restricted | Get Document Root vHost settings"
+        raw: cat /etc/apache2/apache2.conf
+        changed_when: false
+        failed_when: false
+        register: test
+
+      - name: "SCORED | 5.2 | PATCH | Ensure Options for the Web Root Directory Are Restricted | Escape path slashes"
+        set_fact:
+            apache_rhel_5_2_doc_root_dir: '{{ apache2_cis_doc_root_dir | replace("/","\/") }}'
+
+      # - name: "SCORED | 5.2 | PATCH | Ensure Options for the Web Root Directory Are Restricted | Escape path slashes"
+      #   set_fact:
+      #       test_after: "{{ test | regex_search('<Directory \"\/var\/www\/html\">([\\s\\S]*?)<\/Directory>', multiline=True) }}"
+      - debug: var=apache_ubuntu_5_2_vdir_doc_settings
+      - debug: var=apache_ubuntu_5_2_doc_root_dir
+      - debug: var=test_after
+
+      - name: "SCORED | 5.2 | PATCH | Ensure Options for the Web Root Directory Are Restricted | Set options to None or Multiviews if options does not exist"
+        lineinfile:
+            path: "{{ apache2_cis_server_root_dir }}/conf/httpd.conf"
+            line: '    Options {{ apache_cis_webrootdir_options }}'
+            insertafter: '^<Directory "{{ apache2_cis_doc_root_dir }}>'
+        when: "'Options' not in apache_ubuntu_5_2_vdir_doc_settings.stdout"
+
+      - name: "SCORED | 5.2 | PATCH | Ensure Options for the Web Root Directory Are Restricted | Get Document Root vHost settings"
+        shell: cat /etc/httpd/conf/httpd.conf | sed -n "/<Directory "{{ apache_ubuntu_5_2_doc_root_dir }}">/,/<\/Directory>/p"
+        changed_when: false
+        failed_when: false
+        register: apache_ubuntu_5_2_vdir_doc_settings_2222222
+
+      - debug: var=apache_ubuntu_5_2_vdir_doc_settings_2222222
+      # - name: "SCORED | 5.2 | PATCH | Ensure Options for the Web Root Directory Are Restricted | Set options to None or Multiviews if options does not exist"
+      #   replace:
+      #       path: "{{ apache_cis_server_root_dir }}"
+      #       replace: '    Options.*'
+      #       replace: '    Options {{ apache_cis_webrootdir_options }}'
+      #       after: '^<Directory "{{ apache_cis_doc_root_dir }}">'
+      #       before: '^</Directory>'
+  when:
+      - apache_cis_5_2
+      - apache_cis_section5
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_5.2
+      - notimplimented
+
+# -----------------------------
+# -----------------------------
+# Control 5.3/5.4requires dynamic changes to all <Directory> elements. Need to figure out best lineinfile way to handle this
+# -----------------------------
+# -----------------------------
+- name: "SCORED | 5.3 | PATCH | Ensure Options for Other Directories Are Minimized"
+  command: /bin/true
+  changed_when: false
+  failed_when: false
+  when:
+      - apache_cis_5_3
+      - apache_cis_section5
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_5.3
+      - notimplimented
+
+- name: "SCORED | 5.4 | PATCH | Ensure Default HTML Content Is Removed"
+  command: /bin/true
+  changed_when: false
+  failed_when: false
+  when:
+      - apache_cis_5_4
+      - apache_cis_section5
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_5.4
+      - notimplimented
+
+- name: "SCORED | 5.5 | PATCH | Ensure the Default CGI Content printenv Script Is Removed"
+  block:
+      - name: "SCORED | 5.5 | AUDIT | Ensure the Default CGI Content printenv Script Is Removed | Get CGI folder"
+        shell: cat {{ apache2_cis_server_root_dir }}/apache2.conf | grep -i "cgi-bin/" | grep -v "#" | cut -f2 -d'"'
+        changed_when: false
+        failed_when: false
+        register: apache_ubuntu_5_5_cgi_bin_dir
+
+      - name: "SCORED | 5.5 | PATCH | Ensure the Default CGI Content printenv Script Is Removed | Remove printenv"
+        file:
+            path: "{{ item }}/printenv"
+            state: absent
+        with_items:
+            - "{{ apache_ubuntu_5_5_cgi_bin_dir.stdout_lines }}"
+        when: apache_ubuntu_5_5_cgi_bin_dir.stdout != ""
+  when:
+      - apache_cis_5_5
+      - apache_cis_section5
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_5.5
+
+- name: "SCORED | 5.6 | PATCH | Ensure the Default CGI Content test-cgi Script Is Removed"
+  block:
+      - name: "SCORED | 5.6 | AUDIT | Ensure the Default CGI Content test-cgi Script Is Removed | Get CGI folder"
+        shell: cat {{ apache2_cis_server_root_dir }}/conf/httpd.conf | grep -i "cgi-bin/" | grep -v "#" | cut -f2 -d'"'
+        changed_when: false
+        failed_when: false
+        register: apache_ubuntu_5_6_cgi_bin_dir
+
+      - name: "SCORED | 5.6 | PATCH | Ensure the Default CGI Content test-cgi Script Is Removed | Remove test-cgi folder"
+        file:
+            path: "{{ item }}/test-cgi"
+            state: absent
+        with_items:
+            - "{{ apache_ubuntu_5_6_cgi_bin_dir.stdout_lines }}"
+        when: apache_ubuntu_5_6_cgi_bin_dir.stdout != ""
+  when:
+      - apache_cis_5_6
+      - apache_cis_section5
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_5.6
+
+# -----------------------------
+# -----------------------------
+# Control 5.3/5.4requires dynamic changes to all <Directory> elements. Need to figure out best lineinfile way to handle this
+# -----------------------------
+# -----------------------------
+- name: "SCORED | 5.7 | PATCH | Ensure HTTP Request Methods Are Restricted"
+  block:
+      - name: "SCORED | 5.7 | PATCH | Ensure HTTP Request Methods Are Restricted"
+        shell: 'cat /etc/apache2/apache2.conf | sed -n "/<Directory \"\/var\/www\/html\">/,/<\/Directory>/p"'
+        changed_when: false
+        failed_when: false
+        register: apache_ubuntu_5_7_vdir_doc_settings
+  when:
+      - apache_cis_5_7
+      - apache_cis_section5
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_5.7
+      - notimplimented
+
+- name: "SCORED | 5.8 | PATCH | Ensure the HTTP TRACE Method Is Disabled"
+  lineinfile:
+      path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+      regexp: 'TraceEnable.*'
+      line: 'TraceEnable Off'
+  notify: restart apache2
+  when:
+      - apache_cis_5_8
+      - apache_cis_section5
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_5.8
+
+- name: "SCORED | 5.9 | PATCH | Ensure Old HTTP Protocol Versions Are Disallowed"
+  block:
+      - name: "SCORED | 5.9 | PATCH | Ensure Old HTTP Protocol Versions Are Disallowed | Enable re-write module"
+        apache2_module:
+            name: rewrite
+            state: present
+            force: yes
+        notify: restart apache2
+
+      - name: "SCORED | 5.9 | AUDIT | Ensure Old HTTP Protocol Versions Are Disallowed | Check for .htaccess file"
+        stat:
+            path: "{{ apache2_cis_doc_root_dir }}/html/.htaccess"
+        register: apache_ubuntu_5_9_htaccess_state
+
+      - name: "SCORED | 5.9 | PATCH | Ensure Old HTTP Protocol Versions Are Disallowed | Create .htaccess file"
+        blockinfile:
+            path: "{{ apache2_cis_doc_root_dir }}/html/.htaccess"
+            marker: "# {mark} document root settings ANSIBLE MANAGED BLOCK"
+            create: yes
+            block: |
+                <Directory {{ apache2_cis_doc_root_dir }}>
+                        Options Indexes FollowSymLinks
+                        AllowOverride None
+                        Require all granted
+                </Directory>
+        notify: restart apache2
+        when: not apache_ubuntu_5_9_htaccess_state.stat.exists
+
+      - name: "SCORED | 5.9 | PATCH | Ensure Old HTTP Protocol Versions Are Disallowed | Set re-write settings"
+        lineinfile:
+            path: "{{ apache2_cis_doc_root_dir }}/html/.htaccess"
+            regexp: "{{ item.regexp }}"
+            line: "{{ item.line }}"
+        notify: restart apache2
+        with_items:
+            - { regexp: 'RewriteEngine .*', line: 'RewriteEngine On' }
+            - { regexp: 'RewriteOptions .*', line: 'RewriteOptions Inherit'}
+            - { regexp: 'RewriteCond .*', line: 'RewriteCond %{THE_REQUEST} !HTTP/1\.1$' }
+            - { regexp: 'RewriteRule .*', line: 'RewriteRule .* - [F]' }
+  when:
+      - apache_cis_5_9
+      - apache_cis_section5
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_5.9
+
+- name: "SCORED | 5.10 | PATCH | Ensure Access to .ht* Files Is Restricted"
+  block:
+      - name: "SCORED | 5.10 | AUDIT | Ensure Access to .ht* Files Is Restricted | Does FilesMatch exist"
+        shell: cat {{ apache2_cis_server_root_dir }}/apache2.conf | grep -ozP '<FilesMatch \"\^\\.ht\">([\S\s]*?)<\/FilesMatch>'
+        changed_when: false
+        failed_when: false
+        register: apache_ubuntu_5_10_files_match_param
+
+      - name: "SCORED | 5.10 | PATCH | Ensure Access to .ht* Files Is Restricted | Replace Require all setting"
+        replace:
+            path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+            regexp: 'Require.*'
+            replace: 'Require all denied'
+            after: '<FilesMatch "\^\\.ht">'
+            before: '</FilesMatch>'
+        notify: restart apache2
+        when: '"Require" in apache_ubuntu_5_10_files_match_param.stdout'
+
+      - name: "SCORED | 5.10 | PATCH | Ensure Access to .ht* Files Is Restricted | Add Require setting if missing"
+        lineinfile:
+            path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+            regexp: '<FilesMatch "\^\\.ht">'
+            line: |
+                <FilesMatch "^\.ht">
+                    Require all denied
+        notify: restart apache2
+        when: '"Require" not in apache_ubuntu_5_10_files_match_param.stdout and apache_cis_5_10_files_match_param.stdout != ""'
+
+      - name: "SCORED | 5.10 | PATCH | Ensure Access to .ht* Files Is Restricted | Add FilesMatch settings"
+        blockinfile:
+            path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+            marker: "# {mark} FilesMatch ht Setting ANSIBLE MANAGED BLOCK"
+            block: |
+                <FilesMatch "^\.ht">
+                    Require all denied
+                </FilesMatch>
+        notify: restart apache2
+        when: apache_ubuntu_5_10_files_match_param.stdout == ""
+  when:
+      - apache_cis_5_10
+      - apache_cis_section5
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_5.10
+
+- name: "SCORED | 5.11 | PATCH | Ensure Access to Inappropriate File Extensions Is Restricted"
+  block:
+      - name: "SCORED | 5.11 | AUDIT | Ensure Access to Inappropriate File Extensions Is Restricted | Gather file extentions"
+        shell: find {{ apache2_cis_doc_root_dir }} -type f -name '*.*' | awk -F. '{print $NF }' | sort -u
+        changed_when: false
+        failed_when: false
+        register: apache_ubuntu_5_11_file_extentions
+
+      - name: "SCORED | 5.11 | AUDIT | Ensure Access to Inappropriate File Extensions Is Restricted | Find FilesMatch for all files"
+        shell: cat {{ apache2_cis_server_root_dir }}/apache2.conf | grep -ozP '<FilesMatch \"\^\.\*\$\">([\S\s]*?)<\/FilesMatch>'
+        changed_when: false
+        failed_when: false
+        register: apache_ubuntu_5_11_files_match_1
+
+      - name:  "SCORED | 5.11 | AUDIT | Ensure Access to Inappropriate File Extensions Is Restricted | Find FilesMatch for specified files"
+        shell: cat {{ apache2_cis_server_root_dir }}/apache2.conf | grep -ozP '<FilesMatch \"\^\.\*\\.\(.*\)\$\"\>([\S\s]*?)<\/FilesMatch>'
+        changed_when: false
+        failed_when: false
+        register: apache_ubuntu_5_11_files_match_2
+
+      - name: "SCORED | 5.11 | PATCH | Ensure Access to Inappropriate File Extensions Is Restricted | Replace Require in FilesMatch for all files"
+        replace:
+            path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+            regexp: 'Require.*'
+            replace: 'Require all denied'
+            after: '<FilesMatch "\^\.\*\$">'
+            before: '</FilesMatch>'
+        notify: restart apache2
+        when: '"Require" in apache_ubuntu_5_11_files_match_1.stdout'
+
+      - name: "SCORED | 5.11 | PATCH | Ensure Access to Inappropriate File Extensions Is Restricted | Add Require in FilesMatch for all files"
+        lineinfile:
+            path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+            regexp: '<FilesMatch "\^\.\*\$">'
+            line: |
+                <FilesMatch "^.*$">
+                    Require all denied
+        notify: restart apache2
+        when: '"Require" not in apache_ubuntu_5_11_files_match_1.stdout and apache_ubuntu_5_11_files_match_1.stdout != ""'
+
+      - name: "SCORED | 5.11 | PATCH | Ensure Access to Inappropriate File Extensions Is Restricted | Add FilesMatch for all files if missing"
+        blockinfile:
+            path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+            marker: "# {mark} FilesMatch All Settings ANSIBLE MANAGED BLOCK"
+            block: |
+                # Block all files by default, unless specifically allowed.
+                <FilesMatch "^.*$">
+                    Require all denied
+                </FilesMatch>
+        notify: restart apache2
+        when: apache_ubuntu_5_11_files_match_1.stdout == ""
+
+      - name: "SCORED | 5.11 | PATCH | Ensure Access to Inappropriate File Extensions Is Restricted | Set allowed file types"
+        replace:
+            path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+            regexp: '<FilesMatch \"\^\.\*\\.\(.*\)\$\"\>'
+            replace: '<FilesMatch "^.*\.({{ apache_cis_allowed_filetypes }})$">'
+        notify: restart apache2
+        when: '"<FilesMatch" in apache_ubuntu_5_11_files_match_2.stdout'
+
+      - name: "SCORED | 5.11 | PATCH | Ensure Access to Inappropriate File Extensions Is Restricted | Replace Require for allowed file types"
+        replace:
+            path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+            regexp: '    Require.*'
+            replace: '    Require all granted'
+            after: '<FilesMatch \"\^\.\*\\.\(.*\)\$\"\>'
+            before: '</FilesMatch>'
+        notify: restart apache2
+        when: '"Require" in apache_ubuntu_5_11_files_match_2.stdout'
+
+      - name: "SCORED | 5.11 | PATCH | Ensure Access to Inappropriate File Extensions Is Restricted | Add Require for allowed file types"
+        lineinfile:
+            path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+            regexp: '<FilesMatch \"\^\.\*\\.\(.*\)\$\"\>'
+            line: |
+                <FilesMatch "^.*\.({{ apache_cis_allowed_filetypes }})$">
+                    Require all granted
+        notify: restart apache2
+        when: '"Require" not in apache_ubuntu_5_11_files_match_2.stdout and apache_ubuntu_5_11_files_match_2.stdout != ""'
+
+      - name: "SCORED | 5.11 | PATCH | Ensure Access to Inappropriate File Extensions Is Restricted | Add FilesMatch for allowed files if missing"
+        blockinfile:
+            path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+            marker: "# {mark} FilesMatch File Type Settings ANSIBLE MANAGED BLOCK"
+            block: |
+                # Allow files with specifically approved file extensions
+                # Such as (css, htm; html; js; pdf; txt; xml; xsl; ...),
+                # images (gif; ico; jpeg; jpg; png; ...), multimedia
+                <FilesMatch "^.*\.({{ apache_cis_allowed_filetypes }})$">
+                    Require all granted
+                </FilesMatch>
+        notify: restart apache2
+        when: apache_ubuntu_5_11_files_match_2.stdout == ""
+
+      - name: "SCORED | 5.11 | AUDIT | Ensure Access to Inappropriate File Extensions Is Restricted | Display file extensions"
+        debug:
+            msg:
+                - "Alert!! Below are the file extensions in use. Please review to make sure they are all approved"
+                - "{{ apache_ubuntu_5_11_file_extentions.stdout_lines }}"
+  when:
+      - apache_cis_5_11
+      - apache_cis_section5
+  tags:
+      - level2
+      - scored
+      - patch
+      - rule_5.11
+
+- name: "SCORED | 5.12 | PATCH | Ensure IP Address Based Requests Are Disallowed"
+  block:
+      - name: "SCORED | 5.12 | PATCH | Ensure IP Address Based Requests Are Disallowed | Enable re-write module"
+        apache2_module:
+            name: rewrite
+            state: present
+            force: yes
+        notify: restart apache2
+
+      - name: "SCORED | 5.12 | PATCH | Ensure IP Address Based Requests Are Disallowed | Check for htaccess file"
+        stat:
+            path: "{{ apache2_cis_doc_root_dir }}/html/.htaccess"
+        register: apache_ubuntu_5_12_htaccess_state
+      - debug: var=apache_ubuntu_5_12_htaccess_state
+
+      - name: "SCORED | 5.12 | PATCH | Ensure IP Address Based Requests Are Disallowed | Create .htaccess file if needed"
+        blockinfile:
+            path: "{{ apache2_cis_doc_root_dir }}/html/.htaccess"
+            marker: "# {mark} document root settings ANSIBLE MANAGED BLOCK"
+            create: yes
+            block: |
+                <Directory {{ apache2_cis_doc_root_dir }}>
+                        Options Indexes FollowSymLinks
+                        AllowOverride None
+                        Require all granted
+                </Directory>
+        notify: restart apache2
+        when: not apache_ubuntu_5_12_htaccess_state.stat.exists
+
+      - name: "SCORED | 5.12 | PATCH | Ensure IP Address Based Requests Are Disallowed | Set re-write settings"
+        lineinfile:
+            path: "{{ apache2_cis_doc_root_dir }}/html/.htaccess"
+            regexp: "{{ item.regexp }}"
+            line: "{{ item.line }}"
+        notify: restart apache2
+        with_items:
+            - { regexp: 'RewriteEngine .*', line: 'RewriteEngine On'}
+            - { regexp: 'RewriteCond %{HTTP_HOST}.*', line: 'RewriteCond %{HTTP_HOST} !^{{ apache_cis_toplevel_svr }} [NC]' }
+            - { regexp: 'RewriteCond %{REQUEST_URI}.*', line: 'RewriteCond %{REQUEST_URI} !^/error [NC]' }
+            - { regexp: 'RewriteRule \^\.\(\.\*\).*', line: 'RewriteRule ^.(.*) - [L,F]' }
+  when:
+      - apache_cis_5_12
+      - apache_cis_section5
+  tags:
+      - level2
+      - scored
+      - patch
+      - rule_5.12
+
+- name: "SCORED | 5.13 | PATCH | Ensure the IP Addresses for Listening for Requests Are Specified"
+  block:
+      - name: "SCORED | 5.13 | PATCH | Ensure the IP Addresses for Listening for Requests Are Specified | Remove Listen"
+        lineinfile:
+            path: "{{ apache2_cis_server_root_dir }}/ports.conf"
+            regexp: '^Listen.*'
+            state: absent
+        notify: restart apache2
+
+      - name: "SCORED | 5.13 | PATCH | Ensure the IP Addresses for Listening for Requests Are Specified"
+        lineinfile:
+            path: "{{ apache2_cis_server_root_dir }}/ports.conf"
+            line: 'Listen {{ item }}'
+            insertafter: '# prevent Apache from glomming onto all bound IP addresses'
+        with_items:
+            - "{{ apache_cis_listen_ip_port }}"
+        notify: restart apache2
+  when:
+      - apache_cis_5_13
+      - apache_cis_section5
+  tags:
+      - level2
+      - scored
+      - patch
+      - rule_5.13
+
+- name: "SCORED | 5.14 | PATCH | Ensure Browser Framing Is Restricted"
+  block:
+      - name: "SCORED | 5.14 | PATCH | Ensure Browser Framing Is Restricted | Enable headers module"
+        apache2_module:
+            name: headers
+            state: present
+            force: yes
+        notify: restart apache2
+
+      - name: "SCORED | 5.14 | PATCH | Ensure Browser Framing Is Restricted | Set header settings"
+        lineinfile:
+            path: "{{ apache2_cis_server_root_dir }}/conf-enabled/security.conf"
+            regexp: '^Header.*'
+            line: 'Header always append X-Frame-Options SAMEORIGIN'
+            insertafter: '# Supplemental configuration'
+        notify: restart apache2
+  when:
+      - apache_cis_5_14
+      - apache_cis_section5
+  tags:
+      - level2
+      - scored
+      - patch
+      - rule_5.14

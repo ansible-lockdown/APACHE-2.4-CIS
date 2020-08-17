@@ -65,7 +65,7 @@ apache_cis_4_4: true
 
 # Section 5 individual control toggles
 apache_cis_5_1: true
-apache_cis_5_2: true
+apache_cis_5_2: false
 apache_cis_5_3: true
 apache_cis_5_4: true
 apache_cis_5_5: true

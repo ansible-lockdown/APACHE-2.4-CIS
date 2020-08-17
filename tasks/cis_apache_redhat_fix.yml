@@ -894,7 +894,7 @@
 - name: "SCORED | 5.5 | PATCH | Ensure the Default CGI Content printenv Script Is Removed"
   block:
       - name: "SCORED | 5.5 | AUDIT | Ensure the Default CGI Content printenv Script Is Removed | Get CGI folder"
-        shell: cat {{ apache_cis_server_root_dir }}conf/httpd.conf | grep -i "cgi-bin/" | grep -v "#" | cut -f2 -d'"'
+        shell: cat {{ apache_cis_server_root_dir }}/conf/httpd.conf | grep -i "cgi-bin/" | grep -v "#" | cut -f2 -d'"'
         changed_when: false
         failed_when: false
         register: apache_rhel_5_5_cgi_bin_dir
@@ -1224,6 +1224,7 @@
       - patch
       - rule_5.14
 
+# Section 6 Fixes
 - name: |
         "SCORED | 6.1 | PATCH | Ensure the Error Log Filename and Severity Level Are Configured Correctly"
         "SCORED | 6.2 | PATCH | Ensure a Syslog Facility Is Configured for Error Logging"
