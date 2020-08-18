@@ -1448,3 +1448,15 @@
       - rule_6.7
 
 # Section 7 Fixes
+- name: "SCORED | 7.1 | PATCH | Ensure mod_ssl and/or mod_nss Is Installed"
+  block:
+      - name: "SCORED | 7.1 | PATCH | Ensure mod_ssl and/or mod_nss Is Installed | "
+  when:
+      - apache_cis_7_1
+      - apache_cis_section7
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_7.1
