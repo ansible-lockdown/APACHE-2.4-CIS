@@ -194,7 +194,7 @@ apache_cis_loglevel:
 
 # Control 6.1/6.2
 # Path to the apache error logs
-apache_cis_errorlog_path: "logs/error_log"
+apache_cis_errorlog_path: "/var/log/apache2"
 # The facility setting for error logs. Any appropriate syslog facility can be used in place of local1 and will still conform to CIS standards
 apache_cis_errorlog_facility: "local1"
 
@@ -204,7 +204,12 @@ apache_cis_errorlog_facility: "local1"
 # %h, %l, %u, %t, %r, %>s, %b, %{Referer}i, and %{User-agent}i
 apache_cis_log_format: '"%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\""'
 # apache_cis_custom_log is the path for the error log file
-apache_cis_custom_log: "logs/access_log"
+apache_cis_custom_log: "/var/log/apache2"
+
+# Control 6.5
+# apache_cis_extra_packages are the extra packages that will need to be updated. Please make this in list format
+# example format apache_cis_extra_packages: "'apache2', 'telnet', 'openssl'"
+apache_cis_extra_packages: "'apache2'"
 
 # Control 6.7
 # To install/configure OWASP requires internet connections. If there is no internet available please set to false

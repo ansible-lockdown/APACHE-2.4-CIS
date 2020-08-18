@@ -1242,3 +1242,208 @@
       - scored
       - patch
       - rule_5.14
+
+# Section 6 Fixes
+- name: |
+        "SCORED | 6.1 | PATCH | Ensure the Error Log Filename and Severity Level Are Configured Correctly"
+        "SCORED | 6.2 | PATCH | Ensure a Syslog Facility Is Configured for Error Logging"
+  block:
+      - name: "SCORED | 6.1 | PATCH | Ensure the Error Log Filename and Severity Level Are Configured Correctly | Add LogLevel setting"
+        lineinfile:
+            path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+            regexp: '^LogLevel'
+            line: 'LogLevel {{ apache_cis_loglevel.all_mods }} core:{{ apache_cis_loglevel.core_mod }}'
+        notify: restart apache2
+        when:
+            - apache_cis_6_1
+
+      - name: "SCORED | 6.1 | PATCH | Ensure the Error Log Filename and Severity Level Are Configured Correctly | Add ErrorLog path"
+        lineinfile:
+            path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+            regexp: '^ErrorLog'
+            line: 'ErrorLog "{{ apache_cis_errorlog_path }}/error.log"'
+        notify: restart apache2
+        when:
+            - apache_cis_6_1
+            - not apache_cis_6_2
+
+      - name: "SCORED | 6.2 | PATCH | Ensure a Syslog Facility Is Configured for Error Logging | Add ErrorLog path set to system:local1"
+        lineinfile:
+            path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+            regexp: '^ErrorLog'
+            line: 'ErrorLog "syslog:{{ apache_cis_errorlog_facility }}"'
+        notify: restart apache2
+        when:
+            - apache_cis_6_2
+            - not apache_cis_6_1
+
+      - name: |
+              "SCORED | 6.1 | PATCH | Ensure the Error Log Filename and Severity Level Are Configured Correctly | Add combined ErrorLog"
+              "SCORED | 6.2 | PATCH | Ensure a Syslog Facility Is Configured for Error Logging | Add combined ErrorLog"
+        lineinfile:
+            path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+            regexp: '^ErrorLog.*'
+            line: 'ErrorLog "{{ apache_cis_errorlog_path }} syslog:{{ apache_cis_errorlog_facility }}"'
+        notify: restart apache2
+        when:
+            - apache_cis_6_1
+            - apache_cis_6_2
+
+      - name: "SCORED | 6.1 | AUDIT | Ensure the Error Log Filename and Severity Level Are Configured Correctly | Alert about virtual Directories"
+        debug:
+            msg:
+                - "Caution!! If you are using virutal directories please add the ErrorLog directive."
+                - "Each responsible individual or organization needs to access their own web logs and and needs the"
+                - "skills/training/tools for monitoring the logs."
+  when:
+      - apache_cis_6_1 or apache_cis_6_2
+      - apache_cis_section6
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_6.1
+      - rule_6.2
+
+# -----------------------------
+# -----------------------------
+# Control 6.2 combined with control 6.1
+# -----------------------------
+# -----------------------------
+
+- name: "SCORED | 6.3 | PATCH | Ensure the Server Access Log Is Configured Correctly"
+  block:
+      - name: "SCORED | 6.3 | PATCH | Ensure the Server Access Log Is Configured Correctly | Remove LogFormat"
+        lineinfile:
+            path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+            regexp: '^LogFormat .*'
+            state: absent
+        notify: restart apache2
+
+      - name: "SCORED | 6.3 | PATCH | Ensure the Server Access Log Is Configured Correctly | Add/Modify LogFormat and CustomLog"
+        lineinfile:
+            path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+            regexp: "{{ item.regexp }}"
+            line: "{{ item.line }}"
+        notify: restart apache2
+        with_items:
+            - { regexp: '^LogFormat "', line: 'LogFormat {{ apache_cis_log_format }} combined' }
+            - { regexp: '^CustomLog .*', line: 'CustomLog "{{ apache_cis_custom_log }}/access.log" combined' }
+
+      - name: "SCORED | 6.3 | AUDIT | Ensure the Server Access Log Is Configured Correctly | Notify about need for vhost logging"
+        debug:
+            msg:
+                - "Caution!! If you are using virtual directories please add the LogFormat and and CustomLog directives"
+                - "if you have different people responsible for each web site. Each responsible individual or organization"
+                - "needs access to their own web logs as well as the skills/training/tools for monitoring the logs"
+  when:
+      - apache_cis_6_3
+      - apache_cis_section6
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_6.3
+
+- name: "SCORED | 6.4 | PATCH | Ensure Log Storage and Rotation Is Configured Correctly"
+  block:
+      - name: "SCORED | 6.4 | PATCH | Ensure Log Storage and Rotation Is Configured Correctly | Edit logrotate.d/httpd"
+        lineinfile:
+            path: /etc/logrotate.d/apache2
+            regexp: "{{ item.regexp }}"
+            line: "{{ item.line }}"
+            insertafter: "{{ item.insertafter }}"
+        with_items:
+            - { regexp: '^        missingok', line: '        missingok', insertafter: '^/var/log/apache2/' }
+            - { regexp: '^        notifempty', line: '        notifempty', insertafter: '^/var/log/apache2/' }
+            - { regexp: '^        sharedscripts', line: '        sharedscripts', insertafter: '^/var/log/apache2/' }
+            - { regexp: '^        postrotate', line: '        postrotate', insertafter: '^/var/log/apache2/' }
+            - { regexp: '^                /bin', line: "                /bin/kill -HUP 'cat /var/run/apache2/apache2.pid 2>/dev/null' 2> /dev/null || true", insertafter: '    postrotate' }
+
+      - name: "SCORED | 6.4 | PATCH | Ensure Log Storage and Rotation Is Configured Correctly | Edit logrotate.conf"
+        lineinfile:
+            path: /etc/logrotate.conf
+            regexp: "{{ item.regexp }}"
+            line: "{{ item.line }}"
+            insertafter: "{{ item.insertafter }}"
+        with_items:
+            - { regexp: '^# rotate log files ', line: '# rotate log files weekly', insertafter: '^# see' }
+            - { regexp: '^daily|weekly|monthly|yearly', line: 'weekly', insertafter: '^# rotate log files' }
+            - { regexp: '^# keep ([^\s]+) ([^\s]+) worth of backlogs', line: '# keep 13 weeks worth of backlogs', insertafter: '^# see'}
+            - { regexp: '^rotate', line: 'rotate 13', insertafter: '^# keep'}
+  when:
+      - apache_cis_6_4
+      - apache_cis_section6
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_6.4
+
+- name: "SCORED | 6.5 | PATCH | Ensure Applicable Patches Are Applied"
+  apt:
+      name: "[{{ apache_cis_extra_packages }}]"
+      state: latest
+  when:
+      - apache_cis_6_4
+      - apache_cis_section6
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_6.4
+
+- name: "SCORED | 6.6 | PATCH | Ensure ModSecurity Is Installed and Enabled"
+  block:
+      - name: "SCORED | 6.6 | PATCH | Ensure ModSecurity Is Installed and Enabled | Install security module"
+        apt:
+            name: libapache2-mod-security2
+            state: present
+
+      - name: "SCORED | 6.6 | PATCH | Ensure ModSecurity Is Installed and Enabled | Enable security module"
+        apache2_module:
+            name: security2
+            state: present
+            force: yes
+  when:
+      - apache_cis_6_6
+      - apache_cis_section6
+  tags:
+      - level2
+      - scored
+      - patch
+      - rule_6.6
+
+- name: "SCORED | 6.7 | PATCH | Ensure the OWASP ModSecurity Core Rule Set Is Installed and Enabled"
+  block:
+      - name: "SCORED | 6.7 | PATCH | Ensure the OWASP ModSecurity Core Rule Set Is Installed and Enabled | Install OWASP RHEL8"
+        apt:
+            name: modsecurity-crs
+            state: present
+
+      - name: "SCORED | 6.7 | AUDIT | Ensure the OWASP ModSecurity Core Rule Set Is Installed and Enabled | Apply Configuration"
+        template:
+            src: crs-setup.conf.j2
+            dest: "/etc/modsecurity/crs/crs-setup.conf"
+        when:
+            - apache_cis_owasp_automate
+
+      - name: "SCORED | 6.7 | AUDIT | Ensure the OWASP ModSecurity Core Rule Set Is Installed and Enabled | Message out when not automated"
+        debug:
+            msg:
+                - "ALERT!!!!To conform to CIS standards you need OWASP installed and enabled"
+                - "Please go through the process of setup"
+        when: not apache_cis_owasp_automate
+  when:
+      - apache_cis_6_7
+      - apache_cis_section6
+  tags:
+      - level2
+      - scored
+      - audit
+      - rule_6.7
+

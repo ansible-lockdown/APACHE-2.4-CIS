@@ -1426,7 +1426,7 @@
       - patch
       - rule_6.6
 
-- name: "SCORED | 6.7 | AUDIT | Ensure the OWASP ModSecurity Core Rule Set Is Installed and Enabled"
+- name: "SCORED | 6.7 | PATCH | Ensure the OWASP ModSecurity Core Rule Set Is Installed and Enabled"
   block:
       - name: "SCORED | 6.7 | AUDIT | Ensure the OWASP ModSecurity Core Rule Set Is Installed and Enabled | Determine if OWASP is installed"
         find:
@@ -1436,7 +1436,7 @@
             file_type: file
         register: apache_rhel_6_7_owasp_config
 
-      - name: "SCORED | 6.7 | AUDIT | Ensure the OWASP ModSecurity Core Rule Set Is Installed and Enabled | Install OWASP RHEL8"
+      - name: "SCORED | 6.7 | PATCH | Ensure the OWASP ModSecurity Core Rule Set Is Installed and Enabled | Install OWASP RHEL8"
         dnf:
             name: mod_security_crs
             state: present
@@ -1445,7 +1445,7 @@
             - apache_rhel_6_7_owasp_config.matched == 0
             - apache_cis_owasp_automate
 
-      - name: "SCORED | 6.7 | AUDIT | Ensure the OWASP ModSecurity Core Rule Set Is Installed and Enabled | Install OWASP RHEL7"
+      - name: "SCORED | 6.7 | PATCH | Ensure the OWASP ModSecurity Core Rule Set Is Installed and Enabled | Install OWASP RHEL7"
         yum:
             name: mod_security_crs
             state: present
@@ -1454,7 +1454,7 @@
             - apache_rhel_6_7_owasp_config.matched == 0
             - apache_cis_owasp_automate
 
-      - name: "SCORED | 6.7 | AUDIT | Ensure the OWASP ModSecurity Core Rule Set Is Installed and Enabled | Apply Configuration"
+      - name: "SCORED | 6.7 | PATCH | Ensure the OWASP ModSecurity Core Rule Set Is Installed and Enabled | Apply Configuration"
         template:
             src: crs-setup.conf.j2
             dest: "{{ apache_cis_server_root_dir }}/modsecurity.d/crs-setup.conf"
@@ -1476,6 +1476,7 @@
       - audit
       - rule_6.7
 
+# Section 7 Fixes
 - name: "SCORED | 7.1 | PATCH | Ensure mod_ssl and/or mod_nss Is Installed"
   block:
       - name: "SCORED | 7.1 | PATCH | Ensure mod_ssl and/or mod_nss Is Installed | RHEL 7 Install mod_ssl"
