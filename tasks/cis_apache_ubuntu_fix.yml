@@ -1356,11 +1356,11 @@
             line: "{{ item.line }}"
             insertafter: "{{ item.insertafter }}"
         with_items:
-            - { regexp: '^        missingok', line: '        missingok', insertafter: '^/var/log/apache2/' }
-            - { regexp: '^        notifempty', line: '        notifempty', insertafter: '^/var/log/apache2/' }
-            - { regexp: '^        sharedscripts', line: '        sharedscripts', insertafter: '^/var/log/apache2/' }
-            - { regexp: '^        postrotate', line: '        postrotate', insertafter: '^/var/log/apache2/' }
-            - { regexp: '^                /bin', line: "                /bin/kill -HUP 'cat /var/run/apache2/apache2.pid 2>/dev/null' 2> /dev/null || true", insertafter: '    postrotate' }
+            - { regexp: '        missingok', line: '        missingok', insertafter: '^/var/log/apache2/' }
+            - { regexp: '        notifempty', line: '        notifempty', insertafter: '^/var/log/apache2/' }
+            - { regexp: '        sharedscripts', line: '        sharedscripts', insertafter: '^/var/log/apache2/' }
+            - { regexp: '        postrotate', line: '        postrotate', insertafter: '^/var/log/apache2/' }
+            - { regexp: '                /bin', line: "                /bin/kill -HUP 'cat /var/run/apache2/apache2.pid 2>/dev/null' 2> /dev/null || true", insertafter: '    postrotate' }
 
       - name: "SCORED | 6.4 | PATCH | Ensure Log Storage and Rotation Is Configured Correctly | Edit logrotate.conf"
         lineinfile:
@@ -1450,7 +1450,11 @@
 # Section 7 Fixes
 - name: "SCORED | 7.1 | PATCH | Ensure mod_ssl and/or mod_nss Is Installed"
   block:
-      - name: "SCORED | 7.1 | PATCH | Ensure mod_ssl and/or mod_nss Is Installed | "
+      - name: "SCORED | 7.1 | PATCH | Ensure mod_ssl and/or mod_nss Is Installed | Enable mod_ssl"
+        apache2_module:
+            name: ssl
+            state: present
+            force: yes
   when:
       - apache_cis_7_1
       - apache_cis_section7
@@ -1460,3 +1464,219 @@
       - scored
       - patch
       - rule_7.1
+
+# -----------------------------
+# -----------------------------
+# This contral has 13 steps in the remediation. I think this is the simplest way to handle it
+# -----------------------------
+# -----------------------------
+- name: "SCORED | 7.2 | PATCH | Ensure a Valid Trusted Certificate Is Installed"
+  block:
+      - name: "SCORED | 7.2 | PATCH | Ensure a Valid Trusted Certificate Is Installed | Generate private key"
+        openssl_privatekey:
+            path: "/etc/ssl/certs/{{ apache_cis_hostname_cert }}.key"
+            cipher: aes128
+            size: 2048
+            passphrase: "{{ apache_cis_privatekey_passphrase }}"
+        when: not apache_cis_custom_cert
+
+      - name: "SCORED | 7.2 | PATCH | Ensure a Valid Trusted Certificate Is Installed | Convert to clear text"
+        command: openssl rsa -in /etc/ssl/certs/{{ apache_cis_hostname_cert }}.key -out /etc/ssl/certs/{{ apache_cis_hostname_cert }}.clear -passin pass:{{ apache_cis_privatekey_passphrase }}
+        when: not apache_cis_custom_cert
+
+      - name: "SCORED | 7.2 | PATCH | Ensure a Valid Trusted Certificate Is Installed | Create CSR folder"
+        file:
+            path: "{{ apache_cis_csr_folder }}"
+            state: directory
+            mode: '0755'
+        when: not apache_cis_custom_cert
+
+      - name: "SCORED | 7.2 | PATCH | Ensure a Valid Trusted Certificate Is Installed | Create CSR"
+        openssl_csr:
+            path: "{{ apache_cis_csr_folder }}/{{ apache_cis_hostname_cert}}.csr"
+            privatekey_path: /etc/ssl/certs/{{ apache_cis_hostname_cert }}.key
+            privatekey_passphrase: "{{ apache_cis_privatekey_passphrase }}"
+            country_name: "{{ apache_req_distinguished_name_settings.countryName_default }}"
+            state_or_province_name: "{{ apache_req_distinguished_name_settings.stateOrProvinceName_default }}"
+            locality_name: "{{ apache_req_distinguished_name_settings.localityName_default }}"
+            organization_name: "{{ apache_req_distinguished_name_settings.organizationName_default }}"
+            organizational_unit_name: "{{ apache_req_distinguished_name_settings.organizationalUnitName_default }}"
+            common_name: "{{ apache_req_distinguished_name_settings.commonName_default }}"
+            email_address: "{{ apache_req_distinguished_name_settings.email_address }}"
+            subject_alt_name: "{{ apache_cis_alt_names | list }}"
+        when: not apache_cis_custom_cert
+
+      - name: "SCORED | 7.2 | PATCH | Ensure a Valid Trusted Certificate Is Installed | Send CSR to Certificate Authority"
+        openssl_certificate:
+            path: "/etc/ssl/certs/{{ apache_cis_hostname_cert }}.crt"
+            privatekey_path: "/etc/ssl/certs/{{ apache_cis_hostname_cert }}.key"
+            privatekey_passphrase: "{{ apache_cis_privatekey_passphrase }}"
+            csr_path: "{{ apache_cis_csr_folder }}/{{ apache_cis_hostname_cert }}.csr"
+            provider: selfsigned
+            mode: '0444'
+        when: not apache_cis_custom_cert
+
+      - name: "SCORED | 7.2 | PATCH | Ensure a Valid Trusted Certificate Is Installed | Modify ssl.conf, self signed"
+        lineinfile:
+            path: "{{ apache2_cis_server_root_dir }}/sites-available/default-ssl.conf"
+            regexp: "{{ item.regexp }}"
+            line: "{{ item.line }}"
+        with_items:
+            - { regexp: '^                SSLCertificateFile', line: '                SSLCertificateFile      /etc/ssl/certs/{{ apache_cis_hostname_cert }}.crt' }
+            - { regexp: '^                SSLCertificateKeyFile', line: '                SSLCertificateKeyFile /etc/ssl/certs/{{ apache_cis_hostname_cert }}.clear' }
+        notify: restart apache2
+        when: not apache_cis_custom_cert
+
+      - name: "SCORED | 7.2 | PATCH | Ensure a Valid Trusted Certificate Is Installed | Copy custom CA's over"
+        copy:
+            src: "{{ item.src }}"
+            dest: "{{ item.dest }}"
+            mode: '0444'
+        with_items:
+            - { src: "custom_cert/custom_cert_file.crt", dest: "/etc/ssl/certs/custom_cert_file.crt" }
+            - { src: "custom_cert/custom_cert_key.key", dest: "/etc/ssl/certs/custom_certkey.key" }
+        when: apache_cis_custom_cert
+
+      - name: "SCORED | 7.2 | PATCH | Ensure a Valid Trusted Certificate Is Installed | Modify ssl.conf, custom cert"
+        lineinfile:
+            path: "{{ apache2_cis_server_root_dir }}/sites-available/default-ssl.conf"
+            regexp: "{{ item.regexp }}"
+            line: "{{ item.line }}"
+        with_items:
+            - { regexp: '^                SSLCertificateFile', line: '/ssl/certs/custom_cert_file.crt' }
+            - { regexp: '^                SSLCertificateKeyFile', line: '                SSLCertificateKeyFile /etc/ssl/certs/custom_cert_key.key' }
+        notify: restart apache2
+        when: apache_cis_custom_cert
+  when:
+      - apache_cis_7_2
+      - apache_cis_section7
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_7.2
+
+- name: "SCORED | 7.3 | PATCH | Ensure the Server's Private Key Is Protected"
+  block:
+      - name: "SCORED | 7.3 | AUDIT | Ensure the Server's Private Key Is Protected | Find config files with SSLCertificateFile parameter"
+        shell: "grep -r SSLCertificateFile {{ apache2_cis_server_root_dir }}/* | grep -v Binary | cut -f1 -d: | sort --unique"
+        changed_when: false
+        failed_when: false
+        register: apache_ubuntu_7_3_sslcertificatefile_location
+
+      - name: "SCORED | 7.3 | PATCH | Ensure the Server's Private Key Is Protected | Enforce SSLCertificateKeyFile is configured (selfsigned)"
+        lineinfile:
+            path: "{{ item }}"
+            regexp: '^SSLCertificateKeyFile'
+            line: 'SSLCertificateKeyFile /etc/ssl/certs/{{ apache_cis_hostname_cert }}.clear'
+        with_items:
+            - "{{ apache_ubuntu_7_3_sslcertificatefile_location.stdout_lines }}"
+        notify: restart apache2
+        when: not apache_cis_custom_cert
+
+      - name: "SCORED | 7.3 | PATCH | Ensure the Server's Private Key Is Protected | Enforce SSLCertificateKeyFile is configured (custom cert)"
+        lineinfile:
+            path: "{{ item }}"
+            regexp: '^SSLCertificateKeyFile'
+            line: 'SSLCertificateKeyFile /etc/ssl/certs/custom_cert_key.key'
+        with_items:
+            - "{{ apache_ubuntu_7_3_sslcertificatefile_location.stdout_lines }}"
+        notify: restart apache2
+        when: apache_cis_custom_cert
+
+      - name: "SCORED | 7.3 | PATCH | Ensure the Server's Private Key Is Protected | Set permissions on SSLCertificateKeyFile (selfsigned)"
+        file:
+            path: "{{ item }}"
+            owner: root
+            group: root
+            mode: '0400'
+        with_items:
+            - "/etc/ssl/certs/{{ apache_cis_hostname_cert }}.key"
+            - "/etc/ssl/certs/{{ apache_cis_hostname_cert }}.clear"
+        when: not apache_cis_custom_cert
+
+      - name: "SCORED | 7.3 | PATCH | Ensure the Server's Private Key Is Protected | Set permissions on SSLCertificateKeyFile (custom cert)"
+        file:
+            path: /etc/ssl/certs/custom_cert_key.key
+            owner: root
+            group: root
+            mode: '0400'
+        when: apache_cis_custom_cert
+  when:
+      - apache_cis_7_3
+      - apache_cis_section7
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_7.3
+
+- name: |
+    "SCORED | 7.4 | PATCH | Ensure Weak SSL Protocols Are Disabled"
+    "SCORED | 7.10 | PATCH | Ensure the TLSv1.0 and TLSv1.1 Protocols are Disabled"
+  block:
+      - name: |
+          "SCORED | 7.4 | PATCH | Ensure Weak SSL Protocols Are Disabled | Set TLSv1.2 and TLSv1.3"
+          "SCORED | 7.10 | PATCH | Ensure the TLSv1.0 and TLSv1.1 Protocols are Disabled | Set TLSv1.2 and TLSv1.3"
+        lineinfile:
+            path: "{{ apache2_cis_server_root_dir }}/mods-available/ssl.conf"
+            regexp: '        #SSLProtocol|        SSLProtocol'
+            line: '        SSLProtocol TLSv1.2 TLSv1.3'
+            backrefs: yes
+            insertbefore: '^</IfModule>'
+        notify: restart apache2
+        when:
+            - apache_cis_tls_1_2_available
+
+      - name: |
+          "SCORED | 7.4 | PATCH | Ensure Weak SSL Protocols Are Disabled | Set TLSv1"
+          "SCORED | 7.10 | PATCH | Ensure the TLSv1.0 and TLSv1.1 Protocols are Disabled | Set TLSv1"
+        lineinfile:
+            path: "{{ apache2_cis_server_root_dir }}/mods-available/ssl.conf"
+            regexp: '        #SSLProtocol|        SSLProtocol'
+            line: '        SSLProtocol TLSv1'
+            backrefs: yes
+            insertbefore: '^</IfModule>'
+        notify: restart apache2
+        when: not apache_cis_tls_1_2_available
+  when:
+      - apache_cis_7_4 or
+        apache_cis_7_10
+      - apache_cis_section7
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_7.3
+
+# -----------------------------
+# -----------------------------
+# Since the 7.5 and 7.8 controls are virtually the same the apache_cis_sslciphersuite_settings will control iv week and/or Medium ciphers are isabled
+# -----------------------------
+# -----------------------------
+- name: |
+    "SCORED | 7.5 | PATCH | Ensure Weak SSL/TLS Ciphers Are Disabled"
+    "SCORED | 7.8 | PATCH | Ensure Medium Strength SSL/TLS Ciphers Are Disabled"
+  lineinfile:
+      path: "{{ apache2_cis_server_root_dir }}/mods-available/ssl.conf"
+      regexp: "{{ item.regexp }}"
+      line: "{{ item.line }}"
+      backrefs: yes
+      insertbefore: '^</IfModule>'
+  with_items:
+      - { regexp: '        #SSLHonorCipherOrder|        SSLHonorCipherOrder', line: '        SSLHonorCipherOrder on' }
+      - { regexp: '        #SSLCipherSuite|        SSLCipherSuite', line: '        SSLCipherSuite {{ apache_cis_sslciphersuite_settings }}' }
+  notify: restart apache2
+  when:
+      - apache_cis_7_5 or
+        apache_cis_7.8
+      - apache_cis_section7
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_7.5
