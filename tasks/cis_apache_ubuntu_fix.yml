@@ -1772,3 +1772,62 @@
       - patch
       - rule_7.13
       - notimplimented
+
+# Section 8 Fixes
+- name: "SCORED | 8.1 | PATCH | Ensure ServerTokens is Set to 'Prod' or 'ProductOnly'"
+  lineinfile:
+      path: "{{ apache2_cis_server_root_dir }}/conf-available/security.conf"
+      regexp: '^ServerTokens'
+      line: 'ServerTokens {{ apache_cis_servertokens }}'
+  when:
+      - apache_cis_8_1
+      - apache_cis_section8
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_8.1
+
+- name: "SCORED | 8.2 | PATCH | Ensure ServerSignature Is Not Enabled"
+  lineinfile:
+      path: "{{ apache2_cis_server_root_dir }}/conf-available/security.conf"
+      regexp: '^ServerSignature'
+      line: 'ServerSignature Off'
+  when:
+      - apache_cis_8_2
+      - apache_cis_section8
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_8.2
+
+- name: "SCORED | 8.3 | PATCH | Ensure All Default Apache Content Is Removed"
+  replace:
+      path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+      regexp: '^Include conf/extra/httpd-autoindex.conf'
+      replace: '#Include conf/extra/httpd-autoindex.conf'
+  when:
+      - apache_cis_8_3
+      - apache_cis_section8
+  tags:
+      - level2
+      - scored
+      - patch
+      - rule_8.3
+
+- name: "SCORED | 8.4 | PATCH | Ensure ETag Response Header Fields Do Not Include Inodes"
+  lineinfile:
+      path: "{{ apache2_cis_server_root_dir }}/conf-enabled/security.conf"
+      regexp: 'FileETag'
+      state: absent
+  when:
+      - apache_cis_8_4
+      - apache_cis_section8
+  tags:
+      - level2
+      - scored
+      - patch
+      - rule_8.4
