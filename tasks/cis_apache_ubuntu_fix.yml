@@ -2001,3 +2001,156 @@
       - scored
       - patch
       - rule_10.4
+
+# Section 11 Fixes
+- name: "SCORED | 11.1 | PATCH | Ensure SELinux Is Enabled in Enforcing Mode"
+  selinux:
+      policy: default
+      state: enforcing
+  when:
+      - apache_cis_11_1
+      - apache_cis_section11
+      - apache2_cis_selinux
+  tags:
+      - level2
+      - scored
+      - patch
+      - rule_11.1
+
+- name: "SCORED | 11.2 | PATCH | Ensure Apache Processes Run in the httpd_t Confined Context"
+  sefcontext:
+      target: "{{ item }}"
+      setype: httpd_exec_t
+      ftype: f
+  with_items:
+      - /usr/sbin/httpd
+      - /usr/sbin/httpd.worker
+      - /usr/sbin/httpd.event
+      - /usr/sbin/apachectl
+  when:
+      - apache_cis_11_2
+      - apache_cis_section11
+      - apache2_cis_selinux
+  tags:
+      - level2
+      - scored
+      - patch
+      - rule_11.2
+
+- name: "SCORED | 11.3 | PATCH | Ensure the httpd_t Type is Not in Permissive Mode"
+  selinux_permissive:
+      name: httpd_t
+      permissive: true
+  when:
+      - apache_cis_11_3
+      - apache_cis_section11
+      - apache2_cis_selinux
+  tags:
+      - level2
+      - scored
+      - patch
+      - rule_11.3
+
+- name: "NOTSCORED | 11.4 | PATCH | Ensure Only the Necessary SELinux Booleans are Enabled"
+  seboolean:
+      name: httpd_enable_cgi
+      state: no
+      persistent: yes
+  when:
+      - apache_cis_11_4
+      - apache_cis_section11
+      - apache2_cis_selinux
+  tags:
+      - level2
+      - notscored
+      - patch
+      - rule_11.4
+
+# Section 12 Fixes
+- name: "SCORED | 12.1 | PATCH | Ensure the AppArmor Framework Is Enabled"
+  block:
+      - name: "SCORED | 12.1 | PATCH | Ensure the AppArmor Framework Is Enabled | Install AppArmor and module"
+        apt:
+            name: ['apparmor', 'libapache2-mod-apparmor', 'apparmor-utils']
+            state: present
+
+      - name: "SCORED | 12.1 | PATCH | Ensure the AppArmor Framework Is Enabled | Enable apparmor"
+        service:
+            name: apparmor
+            enabled: yes
+            state: started
+  when:
+      - apache_cis_12_1
+      - apache_cis_section12
+      - not apache2_cis_selinux
+  tags:
+      - level2
+      - scored
+      - audit
+      - rule_12.1
+
+- name: "NOTSCORED | 12.2 | PATCH | Ensure the Apache AppArmor Profile Is Configured Properly"
+  block:
+      - name: "NOTSCORED | 12.2 | PATCH | Ensure the Apache AppArmor Profile Is Configured Properly | Stop apache service"
+        service:
+            name: apache2
+            state: stopped
+
+      - name: "NOTSCORED | 12.2 | PATCH | Ensure the Apache AppArmor Profile Is Configured Properly | Create mostly empty apache2 profile"
+        command: aa-autodep apache2
+        changed_when: "'Writting' in apache_ubuntu_12_2_autodep_state.stdout"
+        register: apache_ubuntu_12_2_autodep_state
+
+      - name: "NOTSCORED | 12.2 | PATCH | Ensure the Apache AppArmor Profile Is Configured Properly | Set apache2 profile to complain mode"
+        command: aa-complain apache2
+        changed_when: "'Setting' in apache_ubuntu_12_2_complain_state.stdout"
+        register: apache_ubuntu_12_2_complain_state
+
+      - name: "NOTSCORED | 12.2 | PATCH | Ensure the Apache AppArmor Profile Is Configured Properly | Start apache service"
+        service:
+            name: apache2
+            state: started
+
+      - name: "NOTSCORED | 12.2 | PATCH | Ensure the Apache AppArmor Profile Is Configured Properly | Set enforce for apache2"
+        command: aa-enforce /usr/sbin/apache2
+        changed_when: "'Setting' in apache_ubuntu_12_2_enforcing_state.stdout"
+        register: apache_ubuntu_12_2_enforcing_state
+
+      - name: "NOTSCORED | 12.2 | AUDIT | Ensure the Apache AppArmor Profile Is Configured Properly | Testing instructions"
+        debug:
+            msg:
+                - "Warning!!!! Thoroughly test the web application attempting to exercise all intended functionality so that"
+                - "AppArmor will generate necessary logs of all resources accessed. After those logs are reviewed run the"
+                - "following command 'aa-logprof' to update the profile based on the logs"
+                - "You will also want to edit the profile to remove any inappropriate content and adding appropriate access rules."
+                - "Once the profile is update run this command 'apparmor_parser -r /etc/apparmor.d/usr.sbin.apache2' to reload the"
+                - "updated profile"
+  when:
+      - apache_cis_12_2
+      - apache_cis_section12
+      - not apache2_cis_selinux
+  tags:
+      - level2
+      - notscored
+      - audit
+      - rule_12.2
+
+- name: "SCORED | 12.3 | AUDIT | Ensure Apache AppArmor Profile is in Enforce Mode"
+  block:
+      - name: "SCORED | 12.3 | AUDIT | Ensure Apache AppArmor Profile is in Enforce Mode"
+        command: aa-enforce /usr/sbin/apache2
+        changed_when: "'Setting' in apache_ubuntu_12_3_enforcing_state.stdout"
+        register: apache_ubuntu_12_3_enforcing_state
+
+      - name: "SCORED | 12.3 | AUDIT | Ensure Apache AppArmor Profile is in Enforce Mode | Restart apache2"
+        service:
+            name: apache2
+            state: restarted
+  when:
+      - apache_cis_12_3
+      - apache_cis_section12
+  tags:
+      - level2
+      - scored
+      - audit
+      - rule_12.3

@@ -308,3 +308,8 @@ apache_cis_limitrequestfieldsize: 1024
 # Control 10.4
 # apache_cis_limitrequestbody is the limit set for the size of the request body. The value needs to be set to 102400 (100k) or less
 apache_cis_limitrequestbody: 102400
+
+# Control 11.1
+# apache2_cis_selinux is if you are using AppArmor on Ubuntu instead of SELinux. AppArmor is installed by default with Ubuntu
+# AppArmor is not supported on RHEL based systems and this toggle will not work with the RHEL implimentation of the CIS role. 
+apache2_cis_selinux: false
