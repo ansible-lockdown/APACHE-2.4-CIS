@@ -1680,3 +1680,95 @@
       - scored
       - patch
       - rule_7.5
+
+# -----------------------------
+# -----------------------------
+# Control 7.8 combined with control 7.5
+# -----------------------------
+# -----------------------------
+
+- name: "SCORED | 7.9 | PATCH | Ensure All Web Content is Accessed via HTTPS"
+  lineinfile:
+      path: "{{ apache2_cis_server_root_dir }}/sites-available/000-default.conf"
+      regexp: '        Redirect'
+      line: '        Redirect permanent / {{ apache_cis_tls_redirect }}'
+      # backrefs: yes
+      insertbefore: '^</VirtualHost>'
+  notify: restart apache2
+  when:
+      - apache_cis_7_9
+      - apache_cis_section7
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_7.9
+
+# -----------------------------
+# -----------------------------
+# Control 7.10 combined with control 7.4
+# -----------------------------
+# -----------------------------
+# - name: "SCORED | 7.10 | PATCH | Ensure the TLSv1.0 and TLSv1.1 Protocols are Disabled | Set TLSv1.2 and TLSv1.3 RHEL8"
+#   lineinfile:
+#       path: "{{ apache_cis_server_root_dir }}/conf.d/ssl.conf"
+#       regexp: '^#SSLProtocol|^SSLProtocol'
+#       line: 'SSLProtocol TLSv1.2 TLSv1.3'
+#   notify: restart httpd
+#   when: 
+#   when:
+#       - apache_cis_7_10
+#       - apache_cis_section7
+#   tags:
+#       - level2
+#       - scored
+#       - patch
+#       - rule_7.10
+
+# -----------------------------
+# -----------------------------
+# Circle back to the following three. I need to figure out how to find all vhosts that have ssl enabled in the ssl.conf file
+# -----------------------------
+# -----------------------------
+- name: "SCORED | 7.11 | PATCH | Ensure OCSP Stapling Is Enabled"
+  command: /bin/true
+  changed_when: false
+  failed_when: false
+  when:
+      - apache_cis_7_11
+      - apache_cis_section7
+  tags:
+      - level2
+      - scored
+      - patch
+      - rule_7.11
+      - notimplimented
+
+- name: "SCORED | 7.12 | PATCH | Ensure HTTP Strict Transport Security Is Enabled"
+  command: /bin/true
+  changed_when: false
+  failed_when: false
+  when:
+      - apache_cis_7_12
+      - apache_cis_section7
+  tags:
+      - level2
+      - scored
+      - patch
+      - rule_7.12
+      - notimplimented
+
+- name: "SCORED | 7.13 | PATCH | Ensure Only Cipher Suites That Provide Forward Secrecy Are Enabled"
+  command: /bin/true
+  changed_when: false
+  failed_when: false
+  when:
+      - apache_cis_7_13
+      - apache_cis_section7
+  tags:
+      - level2
+      - scored
+      - patch
+      - rule_7.13
+      - notimplimented
