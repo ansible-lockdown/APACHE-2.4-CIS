@@ -283,7 +283,6 @@
       - rule_2.9
 
 # Section 3 Fixes
-
 # ----------------------------
 # -----------------------------
 # The service is stopped because if the service is running with the user you are trying to set the options for the task will fail since the user is associated with a process
@@ -381,11 +380,6 @@
       - patch
       - rule_3.3
 
-# -----------------------------
-# -----------------------------
-# Confirm /etc/httpd only folder we need to adjust
-# -----------------------------
-# -----------------------------
 - name: "SCORED | 3.4 | PATCH | Ensure Apache Directories and Files Are Owned By Root"
   file:
       name: "{{ apache_cis_server_root_dir }}"
@@ -400,12 +394,6 @@
       - scored
       - patch
       - rule_3.4
-
-# -----------------------------
-# -----------------------------
-# Confirm /etc/httpd only folder we need to adjust
-# -----------------------------
-# -----------------------------
 
 - name: "SCORED | 3.5 | PATCH | Ensure the Group Is Set Correctly on Apache Directories and Files"
   file:
@@ -577,12 +565,6 @@
       - rule_3.10
       - notimplimented
 
-
-# -----------------------------
-# -----------------------------
-# Confirm /etc/httpd only folder we need to adjust
-# -----------------------------
-# -----------------------------
 - name: "SCORED | 3.11 | PATCH | Ensure Group Write Access for the Apache Directories and Files Is Properly Restricted"
   file:
       path: "{{ apache_cis_server_root_dir }}"
@@ -858,7 +840,7 @@
 
 # -----------------------------
 # -----------------------------
-# Control 5.3/5.4requires dynamic changes to all <Directory> elements. Need to figure out best lineinfile way to handle this
+# Control 5.3/5.4 requires dynamic changes to all <Directory> elements. Need to figure out best lineinfile way to handle this
 # -----------------------------
 # -----------------------------
 - name: "SCORED | 5.3 | PATCH | Ensure Options for Other Directories Are Minimized"
@@ -939,25 +921,28 @@
       - patch
       - rule_5.6
 
-# - name: "SCORED | 5.7 | PATCH | Ensure HTTP Request Methods Are Restricted"
-#   block:
-#       - name: "SCORED | 5.7 | PATCH | Ensure HTTP Request Methods Are Restricted"
-#         shell: 'cat /etc/httpd/conf/httpd.conf | sed -n "/<Directory \"\/var\/www\/html\">/,/<\/Directory>/p"'
-#         changed_when: false
-#         failed_when: false
-#         register: apache_rhel_5_7_vdir_doc_settings
-
-#       - debug: var=apache_rhel_5_7_vdir_doc_settings
-#   when:
-#       - apache_cis_5_7
-#       - apache_cis_section5
-#   tags:
-#       - level1
-#       - level2
-#       - scored
-#       - patch
-#       - rule_5.7
-#       - notimplimented
+# -----------------------------
+# -----------------------------
+# Control 5.7requires dynamic changes to all <Directory> elements. Need to figure out best lineinfile way to handle this
+# -----------------------------
+# -----------------------------
+- name: "SCORED | 5.7 | PATCH | Ensure HTTP Request Methods Are Restricted"
+  block:
+      - name: "SCORED | 5.7 | PATCH | Ensure HTTP Request Methods Are Restricted"
+        shell: 'cat /etc/httpd/conf/httpd.conf | sed -n "/<Directory \"\/var\/www\/html\">/,/<\/Directory>/p"'
+        changed_when: false
+        failed_when: false
+        register: apache_rhel_5_7_vdir_doc_settings
+  when:
+      - apache_cis_5_7
+      - apache_cis_section5
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_5.7
+      - notimplimented
 
 - name: "SCORED | 5.8 | PATCH | Ensure the HTTP TRACE Method Is Disabled"
   lineinfile:
@@ -1806,26 +1791,10 @@
 # Control 7.10 combined with control 7.4
 # -----------------------------
 # -----------------------------
-# - name: "SCORED | 7.10 | PATCH | Ensure the TLSv1.0 and TLSv1.1 Protocols are Disabled | Set TLSv1.2 and TLSv1.3 RHEL8"
-#   lineinfile:
-#       path: "{{ apache_cis_server_root_dir }}/conf.d/ssl.conf"
-#       regexp: '^#SSLProtocol|^SSLProtocol'
-#       line: 'SSLProtocol TLSv1.2 TLSv1.3'
-#   notify: restart httpd
-#   when: 
-#   when:
-#       - apache_cis_7_10
-#       - apache_cis_section7
-#   tags:
-#       - level2
-#       - scored
-#       - patch
-#       - rule_7.10
-
 
 # -----------------------------
 # -----------------------------
-# Circle back to the following three. I need to figure out how to find all vhosts that have ssl enabled in the ssl.conf file
+# The three tasks below requires dynamic changes to <Directory> elements. Need to figure out best lineinfile way to handle this
 # -----------------------------
 # -----------------------------
 - name: "SCORED | 7.11 | PATCH | Ensure OCSP Stapling Is Enabled"
@@ -1998,7 +1967,7 @@
 
 # -----------------------------
 # -----------------------------
-# Control 9.5 and 9.6 are hard to set individually so they are combined. 
+# Control 9.5 and 9.6 are hard to set individually so they are combined to a single line. 
 # -----------------------------
 # -----------------------------
 - name: |

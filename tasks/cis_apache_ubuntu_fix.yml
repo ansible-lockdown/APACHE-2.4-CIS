@@ -331,11 +331,6 @@
       - patch
       - rule_3.3
 
-# -----------------------------
-# -----------------------------
-# Confirm /etc/httpd only folder we need to adjust
-# -----------------------------
-# -----------------------------
 - name: "SCORED | 3.4 | PATCH | Ensure Apache Directories and Files Are Owned By Root"
   file:
       name: "{{ apache2_cis_server_root_dir }}"
@@ -350,12 +345,6 @@
       - scored
       - patch
       - rule_3.4
-
-# -----------------------------
-# -----------------------------
-# Confirm /etc/httpd only folder we need to adjust
-# -----------------------------
-# -----------------------------
 
 - name: "SCORED | 3.5 | PATCH | Ensure the Group Is Set Correctly on Apache Directories and Files"
   file:
@@ -394,12 +383,6 @@
         changed_when: false
         failed_when: false
         register: apache_ubuntu_3_7_coredumpdirectory
-
-      # - name: "SCORED | 3.7 | AUDIT | Ensure the Core Dump Directory Is Secured | Find Web Document Root Dir"
-      #   shell: cat {{ apache2_cis_server_root_dir }}/apache2.conf | grep "DocumentRoot " | cut -f2 -d'"'
-      #   changed_when: false
-      #   failed_when: false
-      #   register: apache_ubuntu_3_7_docrootdir
 
       - name: "SCORED | 3.7 | AUDIT | Ensure the Core Dump Directory Is Secured | Message if CoreDumpDirectory is Web Document Root Dir"
         debug:
@@ -537,11 +520,6 @@
       - rule_3.10
       - notimplimented
 
-# -----------------------------
-# -----------------------------
-# Confirm /etc/httpd only folder we need to adjust
-# -----------------------------
-# -----------------------------
 - name: "SCORED | 3.11 | PATCH | Ensure Group Write Access for the Apache Directories and Files Is Properly Restricted"
   file:
       path: "{{ apache2_cis_server_root_dir }}"
@@ -757,6 +735,11 @@
       - patch
       - rule_5.1
 
+# -----------------------------
+# -----------------------------
+# Dynamic directory testing setup. This control is not implemented
+# -----------------------------
+# -----------------------------
 - name: "SCORED | 5.2 | PATCH | Ensure Options for the Web Root Directory Are Restricted"
   block:
       - name: "SCORED | 5.2 | PATCH | Ensure Options for the Web Root Directory Are Restricted | Get Document Root vHost settings"
@@ -901,7 +884,7 @@
 
 # -----------------------------
 # -----------------------------
-# Control 5.3/5.4requires dynamic changes to all <Directory> elements. Need to figure out best lineinfile way to handle this
+# Control 5.3/5.4 requires dynamic changes to all <Directory> elements. Need to figure out best lineinfile way to handle this
 # -----------------------------
 # -----------------------------
 - name: "SCORED | 5.7 | PATCH | Ensure HTTP Request Methods Are Restricted"
@@ -1709,26 +1692,10 @@
 # -----------------------------
 # Control 7.10 combined with control 7.4
 # -----------------------------
-# -----------------------------
-# - name: "SCORED | 7.10 | PATCH | Ensure the TLSv1.0 and TLSv1.1 Protocols are Disabled | Set TLSv1.2 and TLSv1.3 RHEL8"
-#   lineinfile:
-#       path: "{{ apache_cis_server_root_dir }}/conf.d/ssl.conf"
-#       regexp: '^#SSLProtocol|^SSLProtocol'
-#       line: 'SSLProtocol TLSv1.2 TLSv1.3'
-#   notify: restart httpd
-#   when: 
-#   when:
-#       - apache_cis_7_10
-#       - apache_cis_section7
-#   tags:
-#       - level2
-#       - scored
-#       - patch
-#       - rule_7.10
 
 # -----------------------------
 # -----------------------------
-# Circle back to the following three. I need to figure out how to find all vhosts that have ssl enabled in the ssl.conf file
+# The three tasks below requires dynamic changes to <Directory> elements. Need to figure out best lineinfile way to handle this
 # -----------------------------
 # -----------------------------
 - name: "SCORED | 7.11 | PATCH | Ensure OCSP Stapling Is Enabled"
@@ -1895,7 +1862,7 @@
 
 # -----------------------------
 # -----------------------------
-# Control 9.5 and 9.6 are hard to set individually so they are combined. 
+# Control 9.5 and 9.6 are hard to set individually so they are combined to be a single line. 
 # -----------------------------
 # -----------------------------
 - name: |
@@ -2086,7 +2053,7 @@
   tags:
       - level2
       - scored
-      - audit
+      - patch
       - rule_12.1
 
 - name: "NOTSCORED | 12.2 | PATCH | Ensure the Apache AppArmor Profile Is Configured Properly"
@@ -2132,17 +2099,17 @@
   tags:
       - level2
       - notscored
-      - audit
+      - patch
       - rule_12.2
 
-- name: "SCORED | 12.3 | AUDIT | Ensure Apache AppArmor Profile is in Enforce Mode"
+- name: "SCORED | 12.3 | PATCH | Ensure Apache AppArmor Profile is in Enforce Mode"
   block:
-      - name: "SCORED | 12.3 | AUDIT | Ensure Apache AppArmor Profile is in Enforce Mode"
+      - name: "SCORED | 12.3 | PATCH | Ensure Apache AppArmor Profile is in Enforce Mode"
         command: aa-enforce /usr/sbin/apache2
         changed_when: "'Setting' in apache_ubuntu_12_3_enforcing_state.stdout"
         register: apache_ubuntu_12_3_enforcing_state
 
-      - name: "SCORED | 12.3 | AUDIT | Ensure Apache AppArmor Profile is in Enforce Mode | Restart apache2"
+      - name: "SCORED | 12.3 | PATCH | Ensure Apache AppArmor Profile is in Enforce Mode | Restart apache2"
         service:
             name: apache2
             state: restarted
@@ -2152,5 +2119,5 @@
   tags:
       - level2
       - scored
-      - audit
+      - patch
       - rule_12.3
