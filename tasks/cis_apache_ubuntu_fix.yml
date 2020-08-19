@@ -1831,3 +1831,110 @@
       - scored
       - patch
       - rule_8.4
+
+# Section 9 Fixes
+- name: "SCORED | 9.1 | PATCH | Ensure the TimeOut Is Set to 10 or Less"
+  lineinfile:
+      path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+      regexp: '^# Timeout|^Timeout'
+      line: 'Timeout {{ apache_cis_timeout }}'
+  when:
+      - apache_cis_9_1
+      - apache_cis_section9
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_9.1
+
+- name: "SCORED | 9.2 | PATCH | Ensure KeepAlive Is Enabled"
+  lineinfile:
+      path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+      regexp: '^# KeepAlive |^KeepAlive '
+      line: 'KeepAlive On'
+  when:
+      - apache_cis_9_2
+      - apache_cis_section9
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_9.2
+
+- name: "SCORED | 9.3 | PATCH | Ensure MaxKeepAliveRequests is Set to a Value of 100 or Greater"
+  lineinfile:
+      path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+      regexp: '^# MaxKeepAliveRequests|^MaxKeepAliveRequests'
+      line: 'MaxKeepAliveRequests {{ apache_cis_maxkeepaliverequests }}'
+  when:
+      - apache_cis_9_3
+      - apache_cis_section9
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_9.3
+
+- name: "SCORED | 9.4 | PATCH | Ensure KeepAliveTimeout is Set to a Value of 15 or Less"
+  lineinfile:
+      path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+      regexp: '^# KeepAliveTimeout|^KeepAliveTimeout'
+      line: 'KeepAliveTimeout {{ apache_cis_keepalivetimeout }}'
+  when:
+      - apache_cis_9_4
+      - apache_cis_section9
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_9.4
+
+# -----------------------------
+# -----------------------------
+# Control 9.5 and 9.6 are hard to set individually so they are combined. 
+# -----------------------------
+# -----------------------------
+- name: |
+    "SCORED | 9.5 | PATCH | Ensure the Timeout Limits for Request Headers is Set to 40 or Less"
+    "SCORED | 9.6 | PATCH | Ensure Timeout Limits for the Request Body is Set to 20 or Less"
+  block:
+      - name: |
+          "SCORED | 9.5 | PATCH | Ensure the Timeout Limits for Request Headers is Set to 40 or Less | Enable Request Timeout module"
+          "SCORED | 9.6 | PATCH | Ensure Timeout Limits for the Request Body is Set to 20 or Less | Enable Request Timeout module"
+        apache2_module:
+            name: reqtimeout
+            state: present
+            force: yes
+
+      - name: |
+          "SCORED | 9.5 | PATCH | Ensure the Timeout Limits for Request Headers is Set to 40 or Less | Remove existing RequestReadTimeout if needed"
+          "SCORED | 9.6 | PATCH | Ensure Timeout Limits for the Request Body is Set to 20 or Less| Remove existing RequestReadTimeout if needed"
+        lineinfile:
+            path: "{{ apache2_cis_server_root_dir }}/mods-available/reqtimeout.conf"
+            regexp: 'RequestReadTimeout'
+            # backrefs: yes
+            state: absent
+
+      - name: |
+          "SCORED | 9.5 | PATCH | Ensure the Timeout Limits for Request Headers is Set to 40 or Less | Add reqtimeout_module, set body, and header timeout"
+          "SCORED | 9.6 | PATCH | Ensure Timeout Limits for the Request Body is Set to 20 or Less| Add reqtimeout_module, set body, and header timeout"
+        lineinfile:
+            path: "{{ apache2_cis_server_root_dir }}/mods-available/reqtimeout.conf"
+            regexp: '^        RequestReadTimeout'
+            line: '        RequestReadTimeout header={{ apache_cis_reqread_timeout }},MinRate=500 body={{ apache_cis_reqread_body }},MinRate=500'
+            insertafter: '^<IfModule reqtimeout_module>'
+  when:
+      - apache_cis_9_5 or
+        apache_cis_9_6
+      - apache_cis_section9
+  tags:
+      - level1
+      - level2
+      - scored
+      - patch
+      - rule_9.5
+      - rule_9.6

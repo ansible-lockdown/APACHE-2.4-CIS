@@ -1931,7 +1931,7 @@
       - patch
       - rule_8.4
 
-# Section 9
+# Section 9 Fixes
 - name: "SCORED | 9.1 | PATCH | Ensure the TimeOut Is Set to 10 or Less"
   lineinfile:
       path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
