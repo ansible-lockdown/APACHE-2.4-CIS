@@ -239,6 +239,11 @@
       - rule_2.9
 
 # Section 3 Fixes
+# ----------------------------
+# -----------------------------
+# The service is stopped because if the service is running with the user you are trying to set the options for the task will fail since the user is associated with a process
+# ------------------------------
+# -----------------------------
 - name: "SCORED | 3.1 | PATCH | Ensure the Apache Web Server Runs As a Non-Root User"
   block:
       - name: "SCORED | 3.1 | AUDIT | Ensure the Apache Web Server Runs As a Non-Root User | Get configured user block"
@@ -884,7 +889,7 @@
 
 # -----------------------------
 # -----------------------------
-# Control 5.3/5.4 requires dynamic changes to all <Directory> elements. Need to figure out best lineinfile way to handle this
+# Control 5.7requires dynamic changes to all <Directory> elements. Need to figure out best lineinfile way to handle this
 # -----------------------------
 # -----------------------------
 - name: "SCORED | 5.7 | PATCH | Ensure HTTP Request Methods Are Restricted"

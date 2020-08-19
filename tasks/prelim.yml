@@ -32,9 +32,9 @@
         when: ansible_distribution_file_variety == "Debian"
   when: automate_install
 
-# - name: Add additional RHEL repo
-#   command: subscription-manager repos --enable rhel-7-server-optional-rpms
-#   when: ansible_facts.distribution_file_variety == "RedHat" and ansible_facts.distribution_major_version == "7"
+- name: Add additional RHEL repo
+  command: subscription-manager repos --enable rhel-7-server-optional-rpms
+  when: ansible_facts.distribution_file_variety == "RedHat" and ansible_facts.distribution_major_version == "7"
 
 - name: Install needed packages
   block:
