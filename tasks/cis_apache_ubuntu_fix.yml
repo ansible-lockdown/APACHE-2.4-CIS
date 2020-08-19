@@ -1938,3 +1938,66 @@
       - patch
       - rule_9.5
       - rule_9.6
+
+# -----------------------------
+# -----------------------------
+# Control 9.6 combined with control 9.5
+# -----------------------------
+# -----------------------------
+
+# Section 10 Fixes
+- name: "SCORED | 10.1 | PATCH | Ensure the LimitRequestLine directive is Set to 512 or less"
+  lineinfile:
+      path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+      regexp: '^# LimitRequestline|^LimitRequestline'
+      line: 'LimitRequestline {{ apache_cis_limitrequestline }}'
+  when:
+      - apache_cis_10_1
+      - apache_cis_section10
+  tags:
+      - level2
+      - scored
+      - patch
+      - rule_10.1
+
+- name: "SCORED | 10.2 | PATCH | Ensure the LimitRequestFields Directive is Set to 100 or Less"
+  lineinfile:
+      path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+      regexp: '^# LimitRequestFields|^LimitRequestFields'
+      line: 'LimitRequestFields {{ apache_cis_limitrequestfields }}'
+  when:
+      - apache_cis_10_2
+      - apache_cis_section10
+  tags:
+      - level2
+      - scored
+      - patch
+      - rule_10.2
+
+- name: "SCORED | 10.3 | PATCH | Ensure the LimitRequestFieldsize Directive is Set to 1024 or Less"
+  lineinfile:
+      path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+      regexp: '^# LimitRequestFieldsize|^LimitRequestFieldsize'
+      line: 'LimitRequestFieldsize {{ apache_cis_limitrequestfieldsize }}'
+  when:
+      - apache_cis_10_3
+      - apache_cis_section10
+  tags:
+      - level2
+      - scored
+      - patch
+      - rule_10.3
+
+- name: "SCORED | 10.4 | PATCH | Ensure the LimitRequestBody Directive is Set to 102400 or Less"
+  lineinfile:
+      path: "{{ apache2_cis_server_root_dir }}/apache2.conf"
+      regexp: '^# LimitRequestBody|^LimitRequestBody'
+      line: 'LimitRequestBody {{ apache_cis_limitrequestbody }}'
+  when:
+      - apache_cis_10_4
+      - apache_cis_section10
+  tags:
+      - level2
+      - scored
+      - patch
+      - rule_10.4

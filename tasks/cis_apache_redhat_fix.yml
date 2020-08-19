@@ -2060,7 +2060,7 @@
 # -----------------------------
 # -----------------------------
 
-# Section 10
+# Section 10 Fixes
 - name: "SCORED | 10.1 | PATCH | Ensure the LimitRequestLine directive is Set to 512 or less"
   lineinfile:
       path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
