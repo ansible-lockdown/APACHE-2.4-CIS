@@ -149,10 +149,12 @@ apache2_cis_doc_root_dir: "{{ apache2_cis_doc_root_dir_gather.stdout }}"
 
 # Section 3 task variables
 # Control 3.1 variable
-# apache_rhel_user is the user that the appache software will user
+# apache_rhel_user is the user that the apache software will use for RHEL systems
+# apache_ubuntu_user is the user that the apache software will use for Ubuntu (Debian) systems
 apache_rhel_user: apache
 apache_ubuntu_user: apache
-# apache_rhel_group is the group the apache user will use
+# apache_rhel_group is the group the apache user will use for RHEL systems
+# apache_ubuntu_user is the group the apache user will use for Ubuntu (Debian) systems
 apache_rhel_group: apache
 apache_ubuntu_group: apache
 
