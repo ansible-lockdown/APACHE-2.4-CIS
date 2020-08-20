@@ -188,29 +188,39 @@
       - rule_2.5
 
 - name: "SCORED | 2.6 | PATCH | Ensure the Proxy Modules Are Disabled"
-  replace:
-      path: "{{ item.path }}"
-      regexp: "{{ item.regexp }}"
-      replace: "{{ item.replace }}"
-  with_items:
-      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_module modules/mod_proxy.so', replace: '# LoadModule proxy_module modules/mod_proxy.so' }
-      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule lbmethod_bybusyness_module modules/mod_lbmethod_bybusyness.so', replace: '# LoadModule lbmethod_bybusyness_module modules/mod_lbmethod_bybusyness.so' }
-      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule lbmethod_byrequests_module modules/mod_lbmethod_byrequests.so', replace: '# LoadModule lbmethod_byrequests_module modules/mod_lbmethod_byrequests.so' }
-      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule lbmethod_bytraffic_module modules/mod_lbmethod_bytraffic.so', replace: '# LoadModule lbmethod_bytraffic_module modules/mod_lbmethod_bytraffic.so' }
-      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule lbmethod_heartbeat_module modules/mod_lbmethod_heartbeat.so', replace: '# LoadModule lbmethod_heartbeat_module modules/mod_lbmethod_heartbeat.so' }
-      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_connect_module modules/mod_proxy_connect.so', replace: '# LoadModule proxy_connect_module modules/mod_proxy_connect.so' }
-      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_ftp_module modules/mod_proxy_ftp.so', replace: '# LoadModule proxy_ftp_module modules/mod_proxy_ftp.so' }
-      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_http_module modules/mod_proxy_http.so', replace: '# LoadModule proxy_http_module modules/mod_proxy_http.so' }
-      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_fcgi_module modules/mod_proxy_fcgi.so', replace: '# LoadModule proxy_fcgi_module modules/mod_proxy_fcgi.so' }
-      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_scgi_module modules/mod_proxy_scgi.so', replace: '# LoadModule proxy_scgi_module modules/mod_proxy_scgi.so' }
-      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_ajp_module modules/mod_proxy_ajp.so', replace: '# LoadModule proxy_ajp_module modules/mod_proxy_ajp.so' }
-      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_balancer_module modules/mod_proxy_balancer.so', replace: '# LoadModule proxy_balancer_module modules/mod_proxy_balancer.so' }
-      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_express_module modules/mod_proxy_express.so', replace: '# LoadModule proxy_express_module modules/mod_proxy_express.so' }
-      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_wstunnel_module modules/mod_proxy_wstunnel.so', replace: '# LoadModule proxy_wstunnel_module modules/mod_proxy_wstunnel.so' }
-      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_fdpass_module modules/mod_proxy_fdpass.so', replace: '# LoadModule proxy_fdpass_module modules/mod_proxy_fdpass.so' }
-      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_hcheck_module modules/mod_proxy_hcheck.so', replace: '# LoadModule proxy_hcheck_module modules/mod_proxy_hcheck.so' }
-      - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/10-proxy_h2.conf', regexp: '.*LoadModule proxy_http2_module modules/mod_proxy_http2.so', replace: '# LoadModule proxy_http2_module modules/mod_proxy_http2.so' }
-  notify: restart httpd
+  block:
+      - name: "SCORED | 2.6 | PATCH | Ensure the Proxy Modules Are Disabled"
+        replace:
+            path: "{{ item.path }}"
+            regexp: "{{ item.regexp }}"
+            replace: "{{ item.replace }}"
+        with_items:
+            - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_module modules/mod_proxy.so', replace: '# LoadModule proxy_module modules/mod_proxy.so' }
+            - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule lbmethod_bybusyness_module modules/mod_lbmethod_bybusyness.so', replace: '# LoadModule lbmethod_bybusyness_module modules/mod_lbmethod_bybusyness.so' }
+            - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule lbmethod_byrequests_module modules/mod_lbmethod_byrequests.so', replace: '# LoadModule lbmethod_byrequests_module modules/mod_lbmethod_byrequests.so' }
+            - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule lbmethod_bytraffic_module modules/mod_lbmethod_bytraffic.so', replace: '# LoadModule lbmethod_bytraffic_module modules/mod_lbmethod_bytraffic.so' }
+            - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule lbmethod_heartbeat_module modules/mod_lbmethod_heartbeat.so', replace: '# LoadModule lbmethod_heartbeat_module modules/mod_lbmethod_heartbeat.so' }
+            - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_connect_module modules/mod_proxy_connect.so', replace: '# LoadModule proxy_connect_module modules/mod_proxy_connect.so' }
+            - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_ftp_module modules/mod_proxy_ftp.so', replace: '# LoadModule proxy_ftp_module modules/mod_proxy_ftp.so' }
+            - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_http_module modules/mod_proxy_http.so', replace: '# LoadModule proxy_http_module modules/mod_proxy_http.so' }
+            - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_fcgi_module modules/mod_proxy_fcgi.so', replace: '# LoadModule proxy_fcgi_module modules/mod_proxy_fcgi.so' }
+            - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_scgi_module modules/mod_proxy_scgi.so', replace: '# LoadModule proxy_scgi_module modules/mod_proxy_scgi.so' }
+            - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_ajp_module modules/mod_proxy_ajp.so', replace: '# LoadModule proxy_ajp_module modules/mod_proxy_ajp.so' }
+            - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_balancer_module modules/mod_proxy_balancer.so', replace: '# LoadModule proxy_balancer_module modules/mod_proxy_balancer.so' }
+            - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_express_module modules/mod_proxy_express.so', replace: '# LoadModule proxy_express_module modules/mod_proxy_express.so' }
+            - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_wstunnel_module modules/mod_proxy_wstunnel.so', replace: '# LoadModule proxy_wstunnel_module modules/mod_proxy_wstunnel.so' }
+            - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_fdpass_module modules/mod_proxy_fdpass.so', replace: '# LoadModule proxy_fdpass_module modules/mod_proxy_fdpass.so' }
+            - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_hcheck_module modules/mod_proxy_hcheck.so', replace: '# LoadModule proxy_hcheck_module modules/mod_proxy_hcheck.so' }
+            - { path: '{{ apache_cis_server_root_dir }}/conf.modules.d/00-proxy.conf', regexp: '.*LoadModule proxy_uwsgi_module modules/mod_proxy_uwsgi.so', replace: '# LoadModule proxy_uwsgi_module modules/mod_proxy_uwsgi.so' }
+        notify: restart httpd
+            
+      - name: "SCORED | 2.6 | PATCH | Ensure the Proxy Modules Are Disabled | RHEL 8 extra line"
+        replace:
+            path: '{{ apache_cis_server_root_dir }}/conf.modules.d/10-proxy_h2.conf'
+            regexp: '.*LoadModule proxy_http2_module modules/mod_proxy_http2.so'
+            replace: '# LoadModule proxy_http2_module modules/mod_proxy_http2.so'
+        notify: restart httpd
+        when: ansible_facts.distribution_major_version == "8"
   when:
       - apache_cis_2_6
       - apache_cis_section2
@@ -273,10 +283,9 @@
       - rule_2.9
 
 # Section 3 Fixes
-
 # ----------------------------
 # -----------------------------
-# review this to see if we really need to do the multiple blocks. The issue is that if the service is runnign with the user you are trying to set the options for the task will fail since the user is associated with a process
+# The service is stopped because if the service is running with the user you are trying to set the options for the task will fail since the user is associated with a process
 # ------------------------------
 # -----------------------------
 - name: "SCORED | 3.1 | PATCH | Ensure the Apache Web Server Runs As a Non-Root User"
@@ -371,11 +380,6 @@
       - patch
       - rule_3.3
 
-# -----------------------------
-# -----------------------------
-# Confirm /etc/httpd only folder we need to adjust
-# -----------------------------
-# -----------------------------
 - name: "SCORED | 3.4 | PATCH | Ensure Apache Directories and Files Are Owned By Root"
   file:
       name: "{{ apache_cis_server_root_dir }}"
@@ -390,12 +394,6 @@
       - scored
       - patch
       - rule_3.4
-
-# -----------------------------
-# -----------------------------
-# Confirm /etc/httpd only folder we need to adjust
-# -----------------------------
-# -----------------------------
 
 - name: "SCORED | 3.5 | PATCH | Ensure the Group Is Set Correctly on Apache Directories and Files"
   file:
@@ -433,18 +431,18 @@
         shell: cat {{ apache_cis_server_root_dir }}/conf/httpd.conf | grep CoreDumpDirectory | cut -f2 -d " "
         changed_when: false
         failed_when: false
-        register: apache_cis_3_7_coredumpdirectory
+        register: apache_rhel_3_7_coredumpdirectory
 
       - name: "SCORED | 3.7 | AUDIT | Ensure the Core Dump Directory Is Secured | Find Web Document Root Dir"
         shell: cat {{ apache_cis_server_root_dir }}/conf/httpd.conf | grep "DocumentRoot " | cut -f2 -d'"'
         changed_when: false
         failed_when: false
-        register: apache_cis_3_7_docrootdir
+        register: apache_rhel_3_7_docrootdir
 
       - name: "SCORED | 3.7 | AUDIT | Ensure the Core Dump Directory Is Secured | Message if CoreDumpDirectory is Web Document Root Dir"
         debug:
             msg: "WARNING!! Your CoreDumpDirectory is using the Web Document Root directory: {{ apache_cis_3_7_coredumpdirectory.stdout }}"
-        when: apache_cis_3_7_coredumpdirectory.stdout == apache_cis_3_7_docrootdir.stdout
+        when: apache_rhel_3_7_coredumpdirectory.stdout == apache_cis_3_7_docrootdir.stdout
 
       - name: "SCORED | 3.7 | PATCH | Ensure the Core Dump Directory Is Secured"
         file:
@@ -463,10 +461,30 @@
       - patch
       - rule_3.7
 
+# LockFile is no longer the valid parameter, it was replaced with Mutex File
 - name: "SCORED | 3.8 | PATCH | Ensure the Lock File Is Secured"
-  command: /bin/true
-  changed_when: false
-  failed_when: false
+  block:
+      - name: "SCORED | 3.8 | PATCH | Ensure the Lock File Is Secured | Add LockFile directive if needed"
+        lineinfile:
+            path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+            regexp: '^LockFile|^Mutex File'
+            line: 'Mutex File:{{ apache_cis_lockfile_location }} default'
+            insertafter: '# Supplemental configuration'
+
+      - name: "SCORED | 3.8 | PATCH | Ensure the Lock File Is Secured | Create LockFile in new location and set permissions if does not exist"
+        file:
+            path: "{{ apache_cis_lockfile_location }}/httpd.lock"
+            owner: root
+            group: root
+            mode: '0750'
+            state: touch
+
+      - name: "SCORED | 3.8 | PATCH | Ensure the Lock File Is Secured | Set LockFile permissions"
+        file:
+            path: "{{ apache_cis_lockfile_location }}/httpd.lock"
+            owner: root
+            group: root
+            mode: '0750'
   when:
       - apache_cis_3_8
       - apache_cis_section3
@@ -476,7 +494,6 @@
       - scored
       - patch
       - rule_3.8
-      - notimplimented
 
 - name: "SCORED | 3.9 | PATCH | Ensure the Pid File Is Secured"
   block:
@@ -484,11 +501,11 @@
         shell: find / -name httpd.pid
         changed_when: false
         failed_when: false
-        register: apache_cis_3_9_httpd_pid_loc
+        register: apache_rhel_3_9_httpd_pid_loc
 
       - name: "SCORED | 3.9 | PATCH | Ensure the Pid File Is Secured | Set permissions"
         file:
-            path: "{{ apache_cis_3_9_httpd_pid_loc.stdout }}"
+            path: "{{ apache_rhel_3_9_httpd_pid_loc.stdout }}"
             owner: root
             group: root
             mode: o-w,g-w
@@ -498,7 +515,7 @@
             msg:
                 - "WARNING!! Your PID file is in the DocumentRoot directory, to confirm with this STIG control"
                 - "please move to another folder that is not within the Document root directory ({{ apache_cis_doc_root_dir.stdout }})"
-        when: apache_cis_doc_root_dir == apache_cis_3_9_httpd_pid_loc.stdout
+        when: apache_cis_doc_root_dir == apache_rhel_3_9_httpd_pid_loc.stdout
   when:
       - apache_cis_3_9
       - apache_cis_section3
@@ -520,7 +537,7 @@
         shell: cat {{ apache_cis_server_root_dir }}/conf/httpd.conf | grep ScoreBoardFile | cut -f2 -d" "
         changed_when: false
         failed_when: false
-        register: apache_cis_3_10_scoreboardfile
+        register: apache_rhel_3_10_scoreboardfile
 
       - name: "SCORED | 3.10 | AUDIT | Ensure the ScoreBoard File Is Secured | Warn if the same as DocumentRoot"
         debug:
@@ -528,7 +545,7 @@
                 - "WARNING!! The ScoreBoardFile parameter is in use using the DocumentRoot location"
                 - "This does not conform to CIS standars. Please change the ScoreBoardFile location in {{ apache_cis_server_root_dir }}/conf/httpd.conf"
         when: 
-            - '"{{ apache_cis_doc_root_dir }}" in apache_cis_3_10_scoreboardfile.stdout'
+            - '"{{ apache_cis_doc_root_dir }}" in apache_rhel_3_10_scoreboardfile.stdout'
 
       - name: "SCORED | 3.10 | PATCH | Ensure the ScoreBoard File Is Secured | Update file permissions"
         file:
@@ -536,7 +553,7 @@
             owner: root
             group: root
             mode: o-w,g-w
-        when: apache_cis_3_10_scoreboardfile.stdout != ""
+        when: apache_rhel_3_10_scoreboardfile.stdout != ""
   when:
       - apache_cis_3_10
       - apache_cis_section3
@@ -548,12 +565,6 @@
       - rule_3.10
       - notimplimented
 
-
-# -----------------------------
-# -----------------------------
-# Confirm /etc/httpd only folder we need to adjust
-# -----------------------------
-# -----------------------------
 - name: "SCORED | 3.11 | PATCH | Ensure Group Write Access for the Apache Directories and Files Is Properly Restricted"
   file:
       path: "{{ apache_cis_server_root_dir }}"
@@ -584,6 +595,12 @@
       - patch
       - rule_3.12
 
+# -----------------------------
+# -----------------------------
+# Control 3.13 circle back since I'm not sure what is needed here. You are setting values but I can't figure out where those configurations are located
+# -----------------------------
+# -----------------------------
+
 - name: "NOTSCORED | 3.13 | PATCH | Ensure Access to Special Purpose Application Writable Directories is Properly Restricted"
   command: /bin/true
   changed_when: false
@@ -606,7 +623,7 @@
         shell: cat {{ apache_cis_server_root_dir }}/conf/httpd.conf | sed -n '/<Directory \//,/<\/Directory/p'
         changed_when: false
         failed_when: false
-        register: apache_cis_4_1_root_directory
+        register: apache_rhel_4_1_root_directory
 
       - name: "SCORED | 4.1 | PATCH | Ensure Access to OS Root Directory Is Denied By Default | Repace Require if exists"
         replace:
@@ -616,7 +633,7 @@
             after: '<Directory />'
             before: '</Directory>'
         notify: restart httpd
-        when: '"Require" in apache_cis_4_1_root_directory.stdout'
+        when: '"Require" in apache_rhel_4_1_root_directory.stdout'
 
       - name: "SCORED | 4.1 | PATCH | Ensure Access to OS Root Directory Is Denied By Default | Enter Require if it doesn't exist"
         lineinfile:
@@ -626,7 +643,7 @@
                 <Directory />
                     Require all denied
         notify: restart httpd
-        when: '"Require" not in apache_cis_4_1_root_directory.stdout'
+        when: '"Require" not in apache_rhel_4_1_root_directory.stdout'
   when:
       - apache_cis_4_1
       - apache_cis_section4
@@ -635,6 +652,12 @@
       - level2
       - patch
       - rule_4.1
+
+# -----------------------------
+# -----------------------------
+# Control 4.2 requires dynamic changes to all <Directory> and <Location> elements. Need to figure out best lineinfile way to handle this
+# -----------------------------
+# -----------------------------
 
 - name: "NOTSCORED | 4.2 | PATCH | Ensure Appropriate Access to Web Content Is Allowed"
   command: /bin/true
@@ -658,7 +681,7 @@
         shell: cat {{ apache_cis_server_root_dir }}/conf/httpd.conf | sed -n '/<Directory \//,/<\/Directory/p'
         changed_when: false
         failed_when: false
-        register: apache_cis_4_3_root_directory
+        register: apache_rhel_4_3_root_directory
 
       - name: "SCORED | 4.3 | PATCH | Ensure OverRide Is Disabled for the OS Root Directory | Repace AllowOverride if exists"
         replace:
@@ -668,7 +691,7 @@
             after: '<Directory />'
             before: '</Directory>'
         notify: restart httpd
-        when: '"AllowOverride" in apache_cis_4_3_root_directory.stdout'
+        when: '"AllowOverride" in apache_rhel_4_3_root_directory.stdout'
 
       - name: "SCORED | 4.3 | PATCH | Ensure OverRide Is Disabled for the OS Root Directory | Enter AllowOverride if it doesn't exist"
         lineinfile:
@@ -678,7 +701,7 @@
                 <Directory />
                     AllowOverride None
         notify: restart httpd
-        when: '"AllowOverride" not in apache_cis_4_3_root_directory.stdout'
+        when: '"AllowOverride" not in apache_rhel_4_3_root_directory.stdout'
 
       - name: "SCORED | 4.3 | PATCH | Ensure OverRide Is Disabled for the OS Root Directory | Remove AllowOverrideList element"
         lineinfile:
@@ -696,9 +719,20 @@
       - rule_4.3
 
 - name: "SCORED | 4.4 | PATCH | Ensure OverRide Is Disabled for All Directories"
-  command: /bin/true
-  changed_when: false
-  failed_when: false
+  block:
+      - name: "SCORED | 4.4 | PATCH | Ensure OverRide Is Disabled for All Directories | Set AllowOverride to None"
+        replace:
+            path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+            regexp: '^    AllowOverride.*'
+            replace: '    AllowOverride None'
+        notify: restart httpd
+
+      - name: "SCORED | 4.4 | PATCH | Ensure OverRide Is Disabled for All Directories | Remove AllowOverrideList"
+        lineinfile:
+            path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+            regexp: '^    AllowOverrideList'
+            state: absent
+        notify: restart httpd
   when:
       - apache_cis_4_4
       - apache_cis_section4
@@ -708,7 +742,6 @@
       - scored
       - patch
       - rule_4.4
-      - notimplimented
 
 # Section 5 Fixes
 - name: "SCORED | 5.1 | PATCH | Ensure Options for the OS Root Directory Are Restricted"
@@ -717,7 +750,7 @@
         shell: cat {{ apache_cis_server_root_dir }}/conf/httpd.conf | sed -n '/<Directory \//,/<\/Directory/p'
         changed_when: false
         failed_when: false
-        register: apache_cis_5_1_root_directory
+        register: apache_rhel_5_1_root_directory
 
       - name: "SCORED | 5.1 | PATCH | Ensure Options for the OS Root Directory Are Restricted | Replace if Options exist"
         replace:
@@ -727,7 +760,7 @@
             after: '<Directory />'
             before: '</Directory>'
         notify: restart httpd
-        when: '"Options" in apache_cis_5_1_root_directory.stdout'
+        when: '"Options" in apache_rhel_5_1_root_directory.stdout'
 
       - name: "SCORED | 5.1 | PATCH | Ensure Options for the OS Root Directory Are Restricted | Enter Options if doesn't exist"
         lineinfile:
@@ -737,7 +770,7 @@
                 <Directory />
                     Options None
         notify: restart httpd
-        when: '"Options" not in apache_cis_5_1_root_directory.stdout'
+        when: '"Options" not in apache_rhel_5_1_root_directory.stdout'
   when:
       - apache_cis_5_1
       - apache_cis_section5
@@ -749,9 +782,51 @@
       - rule_5.1
 
 - name: "SCORED | 5.2 | PATCH | Ensure Options for the Web Root Directory Are Restricted"
-  command: /bin/true
-  changed_when: false
-  failed_when: false
+  block:
+      - name: "SCORED | 5.2 | PATCH | Ensure Options for the Web Root Directory Are Restricted | Get Document Root vHost settings"
+        raw: cat /etc/httpd/conf/httpd.conf | sed -n "/<Directory \"\/var\/www\/html\">/,/<\/Directory>/p"
+        changed_when: false
+        failed_when: false
+        register: apache_rhel_5_2_vdir_doc_settings
+
+      - name: "SCORED | 5.2 | PATCH | Ensure Options for the Web Root Directory Are Restricted | Get Document Root vHost settings"
+        raw: cat /etc/httpd/conf/httpd.conf
+        changed_when: false
+        failed_when: false
+        register: test
+
+      - name: "SCORED | 5.2 | PATCH | Ensure Options for the Web Root Directory Are Restricted | Escape path slashes"
+        set_fact:
+            apache_rhel_5_2_doc_root_dir: '{{ apache_cis_doc_root_dir | replace("/","\/") }}'
+
+      # - name: "SCORED | 5.2 | PATCH | Ensure Options for the Web Root Directory Are Restricted | Escape path slashes"
+      #   set_fact:
+      #       test_after: "{{ test | regex_search('<Directory \"\/var\/www\/html\">([\\s\\S]*?)<\/Directory>', multiline=True) }}"
+      - debug: var=apache_rhel_5_2_vdir_doc_settings
+      - debug: var=apache_rhel_5_2_doc_root_dir
+      - debug: var=test_after
+
+      - name: "SCORED | 5.2 | PATCH | Ensure Options for the Web Root Directory Are Restricted | Set options to None or Multiviews if options does not exist"
+        lineinfile:
+            path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
+            line: '    Options {{ apache_cis_webrootdir_options }}'
+            insertafter: '^<Directory "{{ apache_cis_doc_root_dir }}>'
+        when: "'Options' not in apache_rhel_5_2_vdir_doc_settings.stdout"
+
+      - name: "SCORED | 5.2 | PATCH | Ensure Options for the Web Root Directory Are Restricted | Get Document Root vHost settings"
+        shell: cat /etc/httpd/conf/httpd.conf | sed -n "/<Directory "{{ apache_rhel_5_2_doc_root_dir }}">/,/<\/Directory>/p"
+        changed_when: false
+        failed_when: false
+        register: apache_rhel_5_2_vdir_doc_settings_2222222
+
+      - debug: var=apache_rhel_5_2_vdir_doc_settings_2222222
+      # - name: "SCORED | 5.2 | PATCH | Ensure Options for the Web Root Directory Are Restricted | Set options to None or Multiviews if options does not exist"
+      #   replace:
+      #       path: "{{ apache_cis_server_root_dir }}"
+      #       replace: '    Options.*'
+      #       replace: '    Options {{ apache_cis_webrootdir_options }}'
+      #       after: '^<Directory "{{ apache_cis_doc_root_dir }}">'
+      #       before: '^</Directory>'
   when:
       - apache_cis_5_2
       - apache_cis_section5
@@ -763,6 +838,11 @@
       - rule_5.2
       - notimplimented
 
+# -----------------------------
+# -----------------------------
+# Control 5.3/5.4 requires dynamic changes to all <Directory> elements. Need to figure out best lineinfile way to handle this
+# -----------------------------
+# -----------------------------
 - name: "SCORED | 5.3 | PATCH | Ensure Options for Other Directories Are Minimized"
   command: /bin/true
   changed_when: false
@@ -796,17 +876,17 @@
 - name: "SCORED | 5.5 | PATCH | Ensure the Default CGI Content printenv Script Is Removed"
   block:
       - name: "SCORED | 5.5 | AUDIT | Ensure the Default CGI Content printenv Script Is Removed | Get CGI folder"
-        shell: cat {{ apache_cis_server_root_dir }}conf/httpd.conf | grep -i "cgi-bin/" | grep -v "#" | cut -f2 -d'"'
+        shell: cat {{ apache_cis_server_root_dir }}/conf/httpd.conf | grep -i "cgi-bin/" | grep -v "#" | cut -f2 -d'"'
         changed_when: false
         failed_when: false
-        register: apache_cis_5_5_cgi_bin_dir
+        register: apache_rhel_5_5_cgi_bin_dir
 
       - name: "SCORED | 5.5 | PATCH | Ensure the Default CGI Content printenv Script Is Removed | Remove printenv"
         file:
             path: "{{ item }}/printenv"
             state: absent
         with_items:
-            - "{{ apache_cis_5_5_cgi_bin_dir.stdout_lines }}"
+            - "{{ apache_rhel_5_5_cgi_bin_dir.stdout_lines }}"
   when:
       - apache_cis_5_5
       - apache_cis_section5
@@ -823,14 +903,14 @@
         shell: cat {{ apache_cis_server_root_dir }}/conf/httpd.conf | grep -i "cgi-bin/" | grep -v "#" | cut -f2 -d'"'
         changed_when: false
         failed_when: false
-        register: apache_cis_5_6_cgi_bin_dir
+        register: apache_rhel_5_6_cgi_bin_dir
 
       - name: "SCORED | 5.6 | PATCH | Ensure the Default CGI Content test-cgi Script Is Removed | Remove test-cgi folder"
         file:
             path: "{{ item }}/test-cgi"
             state: absent
         with_items:
-            - "{{ apache_cis_5_6_cgi_bin_dir.stdout_lines }}"
+            - "{{ apache_rhel_5_6_cgi_bin_dir.stdout_lines }}"
   when:
       - apache_cis_5_6
       - apache_cis_section5
@@ -841,10 +921,18 @@
       - patch
       - rule_5.6
 
+# -----------------------------
+# -----------------------------
+# Control 5.7requires dynamic changes to all <Directory> elements. Need to figure out best lineinfile way to handle this
+# -----------------------------
+# -----------------------------
 - name: "SCORED | 5.7 | PATCH | Ensure HTTP Request Methods Are Restricted"
-  command: /bin/true
-  changed_when: false
-  failed_when: false
+  block:
+      - name: "SCORED | 5.7 | PATCH | Ensure HTTP Request Methods Are Restricted"
+        shell: 'cat /etc/httpd/conf/httpd.conf | sed -n "/<Directory \"\/var\/www\/html\">/,/<\/Directory>/p"'
+        changed_when: false
+        failed_when: false
+        register: apache_rhel_5_7_vdir_doc_settings
   when:
       - apache_cis_5_7
       - apache_cis_section5
@@ -909,7 +997,7 @@
         shell: cat {{ apache_cis_server_root_dir }}/conf/httpd.conf | grep -ozP '<FilesMatch \"\^\\.ht\">([\S\s]*?)<\/FilesMatch>'
         changed_when: false
         failed_when: false
-        register: apache_cis_5_10_files_match_param
+        register: apache_rhel_5_10_files_match_param
 
       - name: "SCORED | 5.10 | PATCH | Ensure Access to .ht* Files Is Restricted | Replace Require all setting"
         replace:
@@ -919,7 +1007,7 @@
             after: '<FilesMatch "\^\\.ht">'
             before: '</FilesMatch>'
         notify: restart httpd
-        when: '"Require" in apache_cis_5_10_files_match_param.stdout'
+        when: '"Require" in apache_rhel_5_10_files_match_param.stdout'
 
       - name: "SCORED | 5.10 | PATCH | Ensure Access to .ht* Files Is Restricted | Add Require setting if missing"
         lineinfile:
@@ -929,7 +1017,7 @@
                 <FilesMatch "^\.ht">
                     Require all denied
         notify: restart httpd
-        when: '"Require" not in apache_cis_5_10_files_match_param.stdout and apache_cis_5_10_files_match_param.stdout != ""'
+        when: '"Require" not in apache_rhel_5_10_files_match_param.stdout and apache_cis_5_10_files_match_param.stdout != ""'
 
       - name: "SCORED | 5.10 | PATCH | Ensure Access to .ht* Files Is Restricted | Add FilesMatch settings"
         blockinfile:
@@ -940,7 +1028,7 @@
                     Require all denied
                 </FilesMatch>
         notify: restart httpd
-        when: apache_cis_5_10_files_match_param.stdout == ""
+        when: apache_rhel_5_10_files_match_param.stdout == ""
   when:
       - apache_cis_5_10
       - apache_cis_section5
@@ -957,19 +1045,19 @@
         shell: find * {{ apache_cis_doc_root_dir }} -type f -name '*.*' | awk -F. '{print $NF }' | sort -u
         changed_when: false
         failed_when: false
-        register: apache_cis_5_11_file_extentions
+        register: apache_rhel_5_11_file_extentions
 
       - name: "SCORED | 5.11 | AUDIT | Ensure Access to Inappropriate File Extensions Is Restricted | Find FilesMatch for all files"
         shell: cat {{ apache_cis_server_root_dir }}/conf/httpd.conf | grep -ozP '<FilesMatch \"\^\.\*\$\">([\S\s]*?)<\/FilesMatch>'
         changed_when: false
         failed_when: false
-        register: apache_cis_5_11_files_match_1
+        register: apache_rhel_5_11_files_match_1
 
       - name:  "SCORED | 5.11 | AUDIT | Ensure Access to Inappropriate File Extensions Is Restricted | Find FilesMatch for specified files"
         shell: cat {{ apache_cis_server_root_dir }}/conf/httpd.conf | grep -ozP '<FilesMatch \"\^\.\*\\.\(.*\)\$\"\>([\S\s]*?)<\/FilesMatch>'
         changed_when: false
         failed_when: false
-        register: apache_cis_5_11_files_match_2
+        register: apache_rhel_5_11_files_match_2
 
       - name: "SCORED | 5.11 | PATCH | Ensure Access to Inappropriate File Extensions Is Restricted | Replace Require in FilesMatch for all files"
         replace:
@@ -978,7 +1066,7 @@
             replace: '    Require all denied'
             after: '<FilesMatch "\^\.\*\$">'
             before: '</FilesMatch>'
-        when: '"Require" in apache_cis_5_11_files_match_1.stdout'
+        when: '"Require" in apache_rhel_5_11_files_match_1.stdout'
 
       - name: "SCORED | 5.11 | PATCH | Ensure Access to Inappropriate File Extensions Is Restricted | Add Require in FilesMatch for all files"
         lineinfile:
@@ -987,7 +1075,7 @@
             line: |
                 <FilesMatch "^.*$">
                     Require all denied
-        when: '"Require" not in apache_cis_5_11_files_match_1.stdout and apache_cis_5_11_files_match_1.stdout != ""'
+        when: '"Require" not in apache_rhel_5_11_files_match_1.stdout and apache_rhel_5_11_files_match_1.stdout != ""'
 
       - name: "SCORED | 5.11 | PATCH | Ensure Access to Inappropriate File Extensions Is Restricted | Add FilesMatch for all files if missing"
         blockinfile:
@@ -998,14 +1086,14 @@
                 <FilesMatch "^.*$">
                     Require all denied
                 </FilesMatch>
-        when: apache_cis_5_11_files_match_1.stdout == ""
+        when: apache_rhel_5_11_files_match_1.stdout == ""
 
       - name: "SCORED | 5.11 | PATCH | Ensure Access to Inappropriate File Extensions Is Restricted | Set allowed file types"
         replace:
             path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
             regexp: '<FilesMatch \"\^\.\*\\.\(.*\)\$\"\>'
             replace: '<FilesMatch "^.*\.({{ apache_cis_allowed_filetypes }})$">'
-        when: '"<FilesMatch" in apache_cis_5_11_files_match_2.stdout'
+        when: '"<FilesMatch" in apache_rhel_5_11_files_match_2.stdout'
 
       - name: "SCORED | 5.11 | PATCH | Ensure Access to Inappropriate File Extensions Is Restricted | Replace Require for allowed file types"
         replace:
@@ -1014,7 +1102,7 @@
             replace: '    Require all granted'
             after: '<FilesMatch \"\^\.\*\\.\(.*\)\$\"\>'
             before: '</FilesMatch>'
-        when: '"Require" in apache_cis_5_11_files_match_2.stdout'
+        when: '"Require" in apache_rhel_5_11_files_match_2.stdout'
 
       - name: "SCORED | 5.11 | PATCH | Ensure Access to Inappropriate File Extensions Is Restricted | Add Require for allowed file types"
         lineinfile:
@@ -1023,7 +1111,7 @@
             line: |
                 <FilesMatch "^.*\.({{ apache_cis_allowed_filetypes }})$">
                     Require all granted
-        when: '"Require" not in apache_cis_5_11_files_match_2.stdout and apache_cis_5_11_files_match_2.stdout != ""'
+        when: '"Require" not in apache_rhel_5_11_files_match_2.stdout and apache_rhel_5_11_files_match_2.stdout != ""'
 
       - name: "SCORED | 5.11 | PATCH | Ensure Access to Inappropriate File Extensions Is Restricted | Add FilesMatch for allowed files if missing"
         blockinfile:
@@ -1036,13 +1124,13 @@
                 <FilesMatch "^.*\.({{ apache_cis_allowed_filetypes }})$">
                     Require all granted
                 </FilesMatch>
-        when: apache_cis_5_11_files_match_2.stdout == ""
+        when: apache_rhel_5_11_files_match_2.stdout == ""
 
       - name: "SCORED | 5.11 | AUDIT | Ensure Access to Inappropriate File Extensions Is Restricted | Display file extensions"
         debug:
             msg:
                 - "Alert!! Below are the file extensions in use. Please review to make sure they are all approved"
-                - "{{ apache_cis_5_11_file_extentions.stdout_lines }}"
+                - "{{ apache_rhel_5_11_file_extentions.stdout_lines }}"
   when:
       - apache_cis_5_11
       - apache_cis_section5
@@ -1121,6 +1209,7 @@
       - patch
       - rule_5.14
 
+# Section 6 Fixes
 - name: |
         "SCORED | 6.1 | PATCH | Ensure the Error Log Filename and Severity Level Are Configured Correctly"
         "SCORED | 6.2 | PATCH | Ensure a Syslog Facility Is Configured for Error Logging"
@@ -1295,7 +1384,7 @@
         shell: 'grep -ri "LoadModule security2" {{ apache_cis_server_root_dir }} | cut -f1 -d:'
         changed_when: false
         failed_when: false
-        register: apache_cis_6_6_sec_mod_path
+        register: apache_rhel_6_6_sec_mod_path
 
       - name: "SCORED | 6.6 | PATCH | Ensure ModSecurity Is Installed and Enabled | Load module if not currently set"
         lineinfile:
@@ -1303,7 +1392,7 @@
             regexp: 'LoadModule security2_module modules/mod_security2.so'
             line: 'LoadModule security2_module modules/mod_security2.so'
             insertbefore: BOF
-        when: apache_cis_6_6_sec_mod_path.stdout != ""
+        when: apache_rhel_6_6_sec_mod_path.stdout != ""
 
       - name: "SCORED | 6.6 | PATCH | Ensure ModSecurity Is Installed and Enabled | Create load config if needed"
         lineinfile:
@@ -1312,7 +1401,7 @@
             line: 'LoadModule security2_module modules/mod_security2.so'
             insertbefore: BOF
             create: yes
-        when: apache_cis_6_6_sec_mod_path.stdout == ""
+        when: apache_rhel_6_6_sec_mod_path.stdout == ""
   when:
       - apache_cis_6_6
       - apache_cis_section6
@@ -1322,7 +1411,7 @@
       - patch
       - rule_6.6
 
-- name: "SCORED | 6.7 | AUDIT | Ensure the OWASP ModSecurity Core Rule Set Is Installed and Enabled"
+- name: "SCORED | 6.7 | PATCH | Ensure the OWASP ModSecurity Core Rule Set Is Installed and Enabled"
   block:
       - name: "SCORED | 6.7 | AUDIT | Ensure the OWASP ModSecurity Core Rule Set Is Installed and Enabled | Determine if OWASP is installed"
         find:
@@ -1330,27 +1419,27 @@
             patterns: 'crs-setup.conf'
             recurse: yes
             file_type: file
-        register: apache_cis_6_7_owasp_config
+        register: apache_rhel_6_7_owasp_config
 
-      - name: "SCORED | 6.7 | AUDIT | Ensure the OWASP ModSecurity Core Rule Set Is Installed and Enabled | Install OWASP RHEL8"
+      - name: "SCORED | 6.7 | PATCH | Ensure the OWASP ModSecurity Core Rule Set Is Installed and Enabled | Install OWASP RHEL8"
         dnf:
             name: mod_security_crs
             state: present
         when: 
             - ansible_distribution_major_version|int >= 8
-            - apache_cis_6_7_owasp_config.matched == 0
+            - apache_rhel_6_7_owasp_config.matched == 0
             - apache_cis_owasp_automate
 
-      - name: "SCORED | 6.7 | AUDIT | Ensure the OWASP ModSecurity Core Rule Set Is Installed and Enabled | Install OWASP RHEL7"
+      - name: "SCORED | 6.7 | PATCH | Ensure the OWASP ModSecurity Core Rule Set Is Installed and Enabled | Install OWASP RHEL7"
         yum:
             name: mod_security_crs
             state: present
         when:
             - ansible_distribution_major_version|int <= 7
-            - apache_cis_6_7_owasp_config.matched == 0
+            - apache_rhel_6_7_owasp_config.matched == 0
             - apache_cis_owasp_automate
 
-      - name: "SCORED | 6.7 | AUDIT | Ensure the OWASP ModSecurity Core Rule Set Is Installed and Enabled | Apply Configuration"
+      - name: "SCORED | 6.7 | PATCH | Ensure the OWASP ModSecurity Core Rule Set Is Installed and Enabled | Apply Configuration"
         template:
             src: crs-setup.conf.j2
             dest: "{{ apache_cis_server_root_dir }}/modsecurity.d/crs-setup.conf"
@@ -1372,6 +1461,7 @@
       - audit
       - rule_6.7
 
+# Section 7 Fixes
 - name: "SCORED | 7.1 | PATCH | Ensure mod_ssl and/or mod_nss Is Installed"
   block:
       - name: "SCORED | 7.1 | PATCH | Ensure mod_ssl and/or mod_nss Is Installed | RHEL 7 Install mod_ssl"
@@ -1488,7 +1578,6 @@
       - scored
       - patch
       - rule_7.2
-      - notimplimented
 
 - name: "SCORED | 7.3 | PATCH | Ensure the Server's Private Key Is Protected"
   block:
@@ -1496,7 +1585,7 @@
         shell: "grep -r SSLCertificateFile {{ apache_cis_server_root_dir }}/* | grep -v Binary | cut -f1 -d: | sort --unique"
         changed_when: false
         failed_when: false
-        register: apache_cis_7_3_sslcertificatefile_location
+        register: apache_rhel_7_3_sslcertificatefile_location
 
       - name: "SCORED | 7.3 | PATCH | Ensure the Server's Private Key Is Protected | Enforce SSLCertificateKeyFile is configured (selfsigned)"
         lineinfile:
@@ -1504,7 +1593,7 @@
             regexp: '^SSLCertificateKeyFile'
             line: 'SSLCertificateKeyFile /etc/ssl/certs/{{ apache_cis_hostname_cert }}.clear'
         with_items:
-            - "{{ apache_cis_7_3_sslcertificatefile_location.stdout_lines }}"
+            - "{{ apache_rhel_7_3_sslcertificatefile_location.stdout_lines }}"
         notify: restart httpd
         when: not apache_cis_custom_cert
 
@@ -1514,7 +1603,7 @@
             regexp: '^SSLCertificateKeyFile'
             line: 'SSLCertificateKeyFile /etc/ssl/certs/custom_cert_key.key'
         with_items:
-            - "{{ apache_cis_7_3_sslcertificatefile_location.stdout_lines }}"
+            - "{{ apache_rhel_7_3_sslcertificatefile_location.stdout_lines }}"
         notify: restart httpd
         when: apache_cis_custom_cert
 
@@ -1546,18 +1635,39 @@
       - patch
       - rule_7.3
 
-- name: "SCORED | 7.4 | PATCH | Ensure Weak SSL Protocols Are Disabled"
+- name: |
+    "SCORED | 7.4 | PATCH | Ensure Weak SSL Protocols Are Disabled"
+    "SCORED | 7.10 | PATCH | Ensure the TLSv1.0 and TLSv1.1 Protocols are Disabled"
   block:
-      - name: "SCORED | 7.4 | PATCH | Ensure Weak SSL Protocols Are Disabled | Set TLS1.2"
+      - name: |
+          "SCORED | 7.4 | PATCH | Ensure Weak SSL Protocols Are Disabled | Set TLSv1.2 and TLSv1.3"
+          "SCORED | 7.10 | PATCH | Ensure the TLSv1.0 and TLSv1.1 Protocols are Disabled | Set TLSv1.2 and TLSv1.3"
         lineinfile:
             path: "{{ apache_cis_server_root_dir }}/conf.d/ssl.conf"
             regexp: '^#SSLProtocol|^SSLProtocol'
             line: 'SSLProtocol TLSv1.2 TLSv1.3'
             insertafter: '^SSLEngine'
         notify: restart httpd
-        when: apache_cis_tls_1_2_available
+        when:
+            - apache_cis_tls_1_2_available
+            - ansible_facts.distribution_major_version == "8"
+      
+      - name: |
+          "SCORED | 7.4 | PATCH | Ensure Weak SSL Protocols Are Disabled | Set TLSv1.2"
+          "SCORED | 7.10 | PATCH | Ensure the TLSv1.0 and TLSv1.1 Protocols are Disabled| Set TLSv1.2"
+        lineinfile:
+            path: "{{ apache_cis_server_root_dir }}/conf.d/ssl.conf"
+            regexp: '^#SSLProtocol|^SSLProtocol'
+            line: 'SSLProtocol TLSv1.2'
+            insertafter: '^SSLEngine'
+        notify: restart httpd
+        when:
+            - apache_cis_tls_1_2_available
+            - ansible_facts.distribution_major_version == "7"
 
-      - name: "SCORED | 7.4 | PATCH | Ensure Weak SSL Protocols Are Disabled | Set TLSv1"
+      - name: |
+          "SCORED | 7.4 | PATCH | Ensure Weak SSL Protocols Are Disabled | Set TLSv1"
+          "SCORED | 7.10 | PATCH | Ensure the TLSv1.0 and TLSv1.1 Protocols are Disabled | Set TLSv1"
         lineinfile:
             path: "{{ apache_cis_server_root_dir }}/conf.d/ssl.conf"
             regexp: '^#SSLProtocol|^SSLProtocol'
@@ -1566,7 +1676,8 @@
         notify: restart httpd
         when: not apache_cis_tls_1_2_available
   when:
-      - apache_cis_7_4
+      - apache_cis_7_4 or
+        apache_cis_7_10
       - apache_cis_section7
   tags:
       - level1
@@ -1609,14 +1720,14 @@
         shell: "grep -r SSLInsecureRenegotiation {{ apache_cis_server_root_dir }}/* | grep -v Binary | cut -f1 -d:"
         changed_when: false
         failed_when: false
-        register: apache_cis_7_6_sslinsecurerenegotiation
+        register: apache_rhel_7_6_sslinsecurerenegotiation
 
       - name: "SCORED | 7.6 | PATCH | Ensure Insecure SSL Renegotiation Is Not Enabled | Set SSLInsecureRenegotiation to off if configured"
         lineinfile:
-            path: "{{ apache_cis_7_6_sslinsecurerenegotiation.stdout }}"
+            path: "{{ apache_rhel_7_6_sslinsecurerenegotiation.stdout }}"
             regexp: '^#SSLInsecureRenegotiation|^SSLInsecureRenegotiation'
             line: 'SSLInsecureRenegotiation off'
-        when: apache_cis_7_6_sslinsecurerenegotiation.stdout != ""
+        when: apache_rhel_7_6_sslinsecurerenegotiation.stdout != ""
   when:
       - apache_cis_7_6
       - apache_cis_section7
@@ -1633,15 +1744,15 @@
         shell: "grep -r SSLCompression {{ apache_cis_server_root_dir }}/* | grep -v Binary | cut -f1 -d:"
         changed_when: false
         failed_when: false
-        register: apache_cis_7_7_sslcompression
+        register: apache_rhel_7_7_sslcompression
 
       - name: "SCORED | 7.7 | PATCH | Ensure SSL Compression is not Enabled | Set SSLCompression to off if Configured"
         lineinfile:
-            path: "{{ apache_cis_7_7_sslcompression.stdout }}"
+            path: "{{ apache_rhel_7_7_sslcompression.stdout }}"
             regexp: '^#SSLCompression|^SSLCompression'
             line: 'SSLCompression off'
         notify: restart httpd
-        when: apache_cis_7_7_sslcompression.stdout != ""
+        when: apache_rhel_7_7_sslcompression.stdout != ""
   when:
       - apache_cis_7_7
       - apache_cis_section7
@@ -1675,25 +1786,15 @@
       - patch
       - rule_7.9
 
-- name: "SCORED | 7.10 | PATCH | Ensure the TLSv1.0 and TLSv1.1 Protocols are Disabled"
-  lineinfile:
-      path: "{{ apache_cis_server_root_dir }}/conf.d/ssl.conf"
-      regexp: '^#SSLProtocol|^SSLProtocol'
-      line: 'SSLProtocol TLSv1.2 TLSv1.3'
-  notify: restart httpd
-  when:
-      - apache_cis_7_10
-      - apache_cis_section7
-  tags:
-      - level2
-      - scored
-      - patch
-      - rule_7.10
-
+# -----------------------------
+# -----------------------------
+# Control 7.10 combined with control 7.4
+# -----------------------------
+# -----------------------------
 
 # -----------------------------
 # -----------------------------
-# Circle back to the following three. I need to figure out how to find all vhosts that have ssl enabled in the ssl.conf file
+# The three tasks below requires dynamic changes to <Directory> elements. Need to figure out best lineinfile way to handle this
 # -----------------------------
 # -----------------------------
 - name: "SCORED | 7.11 | PATCH | Ensure OCSP Stapling Is Enabled"
@@ -1738,7 +1839,7 @@
       - rule_7.13
       - notimplimented
 
-# Section 8
+# Section 8 Fixes
 - name: "SCORED | 8.1 | PATCH | Ensure ServerTokens is Set to 'Prod' or 'ProductOnly'"
   lineinfile:
       path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
@@ -1799,7 +1900,7 @@
       - patch
       - rule_8.4
 
-# Section 9
+# Section 9 Fixes
 - name: "SCORED | 9.1 | PATCH | Ensure the TimeOut Is Set to 10 or Less"
   lineinfile:
       path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
@@ -1866,7 +1967,7 @@
 
 # -----------------------------
 # -----------------------------
-# Control 9.5 and 9.6 are hard to set individually so they are combined. 
+# Control 9.5 and 9.6 are hard to set individually so they are combined to a single line. 
 # -----------------------------
 # -----------------------------
 - name: |
@@ -1887,7 +1988,7 @@
         shell: grep "<IfModule reqtimeout_module>" /etc/httpd/conf/httpd.conf
         changed_when: false
         failed_when: false
-        register: apache_cis_9_5_reqtimeout_module_status
+        register: apache_rhel_9_5_reqtimeout_module_status
 
       - name: |
           "SCORED | 9.5 | PATCH | Ensure the Timeout Limits for Request Headers is Set to 40 or Less | Add reqtimeout_module, set body, and header timeout"
@@ -1899,7 +2000,7 @@
                     RequestReadTimeout header={{ apache_cis_reqread_timeout }},MinRate=500 body={{ apache_cis_reqread_body }},MinRate=500
                 </IfModule>
             insertafter: '# Supplemental configuration'
-        when: apache_cis_9_5_reqtimeout_module_status.stdout == ""
+        when: apache_rhel_9_5_reqtimeout_module_status.stdout == ""
 
       - name: |
           "SCORED | 9.5 | PATCH | Ensure the Timeout Limits for Request Headers is Set to 40 or Less | Just set header and body timeout value"
@@ -1909,7 +2010,7 @@
             regexp: '^    RequestReadTimeout header'
             line: '    RequestReadTimeout header={{ apache_cis_reqread_timeout }},MinRate=500 body={{ apache_cis_reqread_body }},MinRate=500'
             insertafter: '<IfModule reqtimeout_module>'
-        when: apache_cis_9_5_reqtimeout_module_status.stdout != ""
+        when: apache_rhel_9_5_reqtimeout_module_status.stdout != ""
   when:
       - apache_cis_9_5 or
         apache_cis_9_6
@@ -1928,7 +2029,7 @@
 # -----------------------------
 # -----------------------------
 
-# Section 10
+# Section 10 Fixes
 - name: "SCORED | 10.1 | PATCH | Ensure the LimitRequestLine directive is Set to 512 or less"
   lineinfile:
       path: "{{ apache_cis_server_root_dir }}/conf/httpd.conf"
