@@ -1392,7 +1392,7 @@
 
       - name: "SCORED | 6.6 | PATCH | Ensure ModSecurity Is Installed and Enabled | Load module if not currently set"
         lineinfile:
-            path: "{{ apache_cis_6_6_sec_mod_path.stdout }}"
+            path: "{{ apache_rhel_6_6_sec_mod_path.stdout }}"
             regexp: 'LoadModule security2_module modules/mod_security2.so'
             line: 'LoadModule security2_module modules/mod_security2.so'
             insertbefore: BOF
