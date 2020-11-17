@@ -36,3 +36,19 @@ jobs:
           variables: '{ "gitrepo": "https://github.com/ansible-lockdown/APACHE-2.4-CIS.git", "image": "ami-098f55b4287a885ba", "githubBranch": "${{ github.head_ref }}", "username": "centos" }'
           # Refactr API base URL
           api_url: # optional
+
+      - name: Refactr - Run RHEL 8 Pipeline (to devel)
+       # You may pin to the exact commit or the version.
+        # uses: refactr/action-run-pipeline@be91e2796aa225268e4685c0e01a26d5f800cd53
+        uses: refactr/action-run-pipeline@v0.1.2
+        with:
+          # API token
+          api_token: '${{ secrets.REFACTR_KEY }}'
+          # Project ID
+          project_id: 5f47f0c4a13c7b18373e5556
+          # Job ID
+          job_id: 5f933cbcf9c74e86b1609c00
+          # Variables
+          variables: '{ "gitrepo": "https://github.com/ansible-lockdown/APACHE-2.4-CIS.git", "image": "ami-0ac4afbf945e5d64f", "githubBranch": "${{ github.head_ref }}", "username": "centos" }'
+          # Refactr API base URL
+          api_url: # optional
