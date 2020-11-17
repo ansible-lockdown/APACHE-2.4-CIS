@@ -1011,7 +1011,6 @@
         notify: restart httpd
         when: 
             - '"Require" in apache_rhel_5_10_files_match_param.stdout'
-            - apache_cis_5_10_files_match_param.stdout != ""
 
       - name: "SCORED | 5.10 | PATCH | Ensure Access to .ht* Files Is Restricted | Add Require setting if missing"
         lineinfile:
@@ -1022,7 +1021,7 @@
                     Require all denied
         notify: restart httpd
         when:
-            - apache_cis_5_10_files_match_param.stdout != ""
+            - apache_rhel_5_10_files_match_param.stdout != ""
             - '"Require" not in apache_rhel_5_10_files_match_param.stdout'
 
       - name: "SCORED | 5.10 | PATCH | Ensure Access to .ht* Files Is Restricted | Add FilesMatch settings"
