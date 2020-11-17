@@ -1009,7 +1009,9 @@
             after: '<FilesMatch "\^\\.ht">'
             before: '</FilesMatch>'
         notify: restart httpd
-        when: '"Require" in apache_rhel_5_10_files_match_param.stdout'
+        when: 
+            - '"Require" in apache_rhel_5_10_files_match_param.stdout'
+            - apache_cis_5_10_files_match_param.stdout != ""
 
       - name: "SCORED | 5.10 | PATCH | Ensure Access to .ht* Files Is Restricted | Add Require setting if missing"
         lineinfile:
