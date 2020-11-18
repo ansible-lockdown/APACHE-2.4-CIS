@@ -54,8 +54,7 @@
         apt:
             name: ['python-lxml', 'auditd', 'policycoreutils', 'selinux-utils', 'selinux-basics']
             state: present
-        # when: ansible_facts.distribution_file_variety == "Debian" and ansible_facts.distribution_major_version == "20"
-        when: ansible_facts.distribution_file_variety == "Debian"
+        when: ansible_facts.distribution_file_variety == "Debian" and ansible_facts.distribution_major_version == "20"
 
 - name: Get ServerRoot folder
   block:
