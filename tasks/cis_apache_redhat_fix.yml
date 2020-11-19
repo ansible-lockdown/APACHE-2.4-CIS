@@ -442,7 +442,9 @@
       - name: "SCORED | 3.7 | AUDIT | Ensure the Core Dump Directory Is Secured | Message if CoreDumpDirectory is Web Document Root Dir"
         debug:
             msg: "WARNING!! Your CoreDumpDirectory is using the Web Document Root directory: {{ apache_cis_3_7_coredumpdirectory.stdout }}"
-        when: apache_rhel_3_7_coredumpdirectory.stdout == apache_cis_3_7_docrootdir.stdout
+        when: 
+            - apache_rhel_3_7_coredumpdirectory.stdout != ""
+            - apache_rhel_3_7_coredumpdirectory.stdout == apache_cis_3_7_docrootdir.stdout
 
       - name: "SCORED | 3.7 | PATCH | Ensure the Core Dump Directory Is Secured"
         file:
@@ -1007,7 +1009,8 @@
             after: '<FilesMatch "\^\\.ht">'
             before: '</FilesMatch>'
         notify: restart httpd
-        when: '"Require" in apache_rhel_5_10_files_match_param.stdout'
+        when: 
+            - '"Require" in apache_rhel_5_10_files_match_param.stdout'
 
       - name: "SCORED | 5.10 | PATCH | Ensure Access to .ht* Files Is Restricted | Add Require setting if missing"
         lineinfile:
@@ -1017,7 +1020,9 @@
                 <FilesMatch "^\.ht">
                     Require all denied
         notify: restart httpd
-        when: '"Require" not in apache_rhel_5_10_files_match_param.stdout and apache_cis_5_10_files_match_param.stdout != ""'
+        when:
+            - apache_rhel_5_10_files_match_param.stdout != ""
+            - '"Require" not in apache_rhel_5_10_files_match_param.stdout'
 
       - name: "SCORED | 5.10 | PATCH | Ensure Access to .ht* Files Is Restricted | Add FilesMatch settings"
         blockinfile:
@@ -1388,7 +1393,7 @@
 
       - name: "SCORED | 6.6 | PATCH | Ensure ModSecurity Is Installed and Enabled | Load module if not currently set"
         lineinfile:
-            path: "{{ apache_cis_6_6_sec_mod_path.stdout }}"
+            path: "{{ apache_rhel_6_6_sec_mod_path.stdout }}"
             regexp: 'LoadModule security2_module modules/mod_security2.so'
             line: 'LoadModule security2_module modules/mod_security2.so'
             insertbefore: BOF

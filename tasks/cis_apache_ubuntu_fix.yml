@@ -1412,6 +1412,15 @@
         apt:
             name: modsecurity-crs
             state: present
+        when:
+            - apache_cis_owasp_automate
+
+      - name: "SCORED | 6.7 | AUDIT | Ensure the OWASP ModSecurity Core Rule Set Is Installed and Enabled | Create config folder if doesn't exist Configuration"
+        file:
+            name: /etc/modsecurity/crs/
+            state: directory
+        when:
+            - apache_cis_owasp_automate
 
       - name: "SCORED | 6.7 | AUDIT | Ensure the OWASP ModSecurity Core Rule Set Is Installed and Enabled | Apply Configuration"
         template:

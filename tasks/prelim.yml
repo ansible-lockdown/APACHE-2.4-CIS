@@ -34,7 +34,7 @@
 
 - name: Add additional RHEL repo
   command: subscription-manager repos --enable rhel-7-server-optional-rpms
-  when: ansible_facts.distribution_file_variety == "RedHat" and ansible_facts.distribution_major_version == "7"
+  when: ansible_distribution == "RedHat" and ansible_facts.distribution_major_version == "7"
 
 - name: Install needed packages
   block:
@@ -105,3 +105,7 @@
   when:
       - apache_cis_11_2
       - apache_cis_section11
+
+# - name: Install PyOpenSSL
+#   apt:
+#       name: 
