@@ -29,7 +29,6 @@ jobs:
         with:
           # API token
           api_token: '${{ secrets.REFACTR_KEY }}'
-          
           # Project ID
           project_id: 5f47f0c4a13c7b18373e5556
           # Job ID
