@@ -11,11 +11,11 @@
     #
     # NOTE: A tag is limited to a single word comprised of alphanumeric characters.
     #       Maximum 20 tags per role.
-galaxy_tags:
-    - system
-    - security
-    - cis
-   - hardening
+   galaxy_tags:
+        - system
+        - security
+        - cis
+        - hardening
 
 dependencies: []
   # List your role dependencies here, one per line. Be sure to remove the '[]' above,
