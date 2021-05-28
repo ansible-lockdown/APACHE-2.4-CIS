@@ -70,7 +70,7 @@
         changed_when: false
         failed_when: false
         register: apache2_cis_server_root_dir_gather
-        when: ansible_facts.distribution_file_variety == "Debian" 
+        when: ansible_facts.distribution_file_variety == "Debian"
       - debug: var=apache2_cis_server_root_dir_gather
 
 - name: Get DocumentRoot folder
@@ -108,4 +108,4 @@
 
 # - name: Install PyOpenSSL
 #   apt:
-#       name: 
+#       name:
