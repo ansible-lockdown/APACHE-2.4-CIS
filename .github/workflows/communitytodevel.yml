@@ -100,10 +100,3 @@ jobs:
           variables: '{ "gitrepo": "https://github.com/ansible-lockdown/APACHE-2.4-CIS.git", "image": "ami-0fe12c34e05228a69", "githubBranch": "${{ github.head_ref }}", "username": "ubuntu" }'
           # Refactr API base URL
           api_url: # optional
-© 2021 GitHub, Inc.
-Terms
-Privacy
-Security
-Status
-Docs
-C
