@@ -92,10 +92,11 @@
 # - In Apache, you can use ErrorDocument to show a friendly error page or
 # perform a redirect: https://httpd.apache.org/docs/2.4/custom-error.html
 
+"---"
 SecDefaultAction "phase:1,log,auditlog,pass"
 SecDefaultAction "phase:2,log,auditlog,pass"
 
-# Example: Anomaly Scoring mode, log only to ModSecurity audit log
+#  Example: Anomaly Scoring mode, log only to ModSecurity audit log
 # - By default, offending requests are blocked with an error 403 response.
 # - To change the disruptive action, see RESPONSE-999-EXCEPTIONS.conf.example
 #   and review section 'Changing the Disruptive Action for Anomaly Mode'.
@@ -253,7 +254,7 @@ SecDefaultAction "phase:2,log,auditlog,pass"
 #
 # Uncomment this rule to change the defaults:
 #
-#SecAction \
+# SecAction \
 # "id:900110,\
 #  phase:1,\
 #  nolog,\
@@ -769,4 +770,3 @@ SecAction \
   pass,\
   t:none,\
   setvar:tx.crs_setup_version=300"
-  

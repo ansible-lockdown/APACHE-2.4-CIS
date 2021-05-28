@@ -6,7 +6,7 @@ name: CommunityToDevel
 # events but only for the devel branch
 on:
   pull_request:
-  branches: [ devel ]
+    branches: [ devel ]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -100,3 +100,10 @@ jobs:
           variables: '{ "gitrepo": "https://github.com/ansible-lockdown/APACHE-2.4-CIS.git", "image": "ami-0fe12c34e05228a69", "githubBranch": "${{ github.head_ref }}", "username": "ubuntu" }'
           # Refactr API base URL
           api_url: # optional
+© 2021 GitHub, Inc.
+Terms
+Privacy
+Security
+Status
+Docs
+C
