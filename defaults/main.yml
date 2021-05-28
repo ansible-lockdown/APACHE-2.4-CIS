@@ -189,7 +189,8 @@ apache_cis_listen_ip_port:
 
 # Section 6 task variables
 # Control 6.1
-# all_mods is the level for everything but but core module. Value bust be notice or lower. The core_mod is the core mod setting and needs to be info or lower. 
+#all_mods is the level for everything but but core module. Value bust be notice or lower. The core_mod is the core mod setting and needs to be info or lower.
+
 apache_cis_loglevel:
     all_mods: "notice"
     core_mod: "info"
@@ -222,7 +223,8 @@ apache_cis_owasp_automate: true
 # When apache_cis_custom_cert set to true the file in files/custom_cert will be copied to the /etc/ssl/certs folder
 # When apache_cis_custom_cert set to false the control will create a self signed certificate
 apache_cis_custom_cert: false
-# The hostname used for certificate. It is important to remember that the browser will compare the host name in the URL to the common name in the 
+
+# The hostname used for certificate. It is important to remember that the browser will compare the host name in the URL to the common name in the
 # certificate, so that it is important that all https: URL's match the correct host name.
 # Specifically, the host name www.example.com is not the same as example.com nor the
 # same as ssl.example.com.
@@ -313,5 +315,5 @@ apache_cis_limitrequestbody: 102400
 
 # Control 11.1
 # apache2_cis_selinux is if you are using AppArmor on Ubuntu instead of SELinux. AppArmor is installed by default with Ubuntu
-# AppArmor is not supported on RHEL based systems and this toggle will not work with the RHEL implimentation of the CIS role. 
+# AppArmor is not supported on RHEL based systems and this toggle will not work with the RHEL implimentation of the CIS role.
 apache2_cis_selinux: false
