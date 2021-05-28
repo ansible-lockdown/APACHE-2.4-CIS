@@ -189,7 +189,7 @@ apache_cis_listen_ip_port:
 
 # Section 6 task variables
 # Control 6.1
-#all_mods is the level for everything but but core module. Value bust be notice or lower. The core_mod is the core mod setting and needs to be info or lower.
+# all_mods is the level for everything but but core module. Value bust be notice or lower. The core_mod is the core mod setting and needs to be info or lower.
 
 apache_cis_loglevel:
     all_mods: "notice"
