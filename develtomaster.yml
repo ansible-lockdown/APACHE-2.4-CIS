@@ -25,12 +25,12 @@ jobs:
         uses: refactr/action-run-pipeline@v0.1.2
         with:
           # API token
-           api_token: '${{ secrets.REFACTR_KEY }}'
+       api_token: '${{ secrets.REFACTR_KEY }}'
           # Project ID
-          project_id: 5f47f0c4a13c7b18373e5556
+       project_id: 5f47f0c4a13c7b18373e5556
           # Job ID
-          job_id: 5f90ad90f9c74e6d1e606e33
+       job_id: 5f90ad90f9c74e6d1e606e33
           # Variables
-          variables: '{ "gitrepo": "https://github.com/ansible-lockdown/UBUNTU20-CIS.git", "image": "ami-0fe12c34e05228a69", "username": "ubuntu" }'
+       variables: '{ "gitrepo": "https://github.com/ansible-lockdown/UBUNTU20-CIS.git", "image": "ami-0fe12c34e05228a69", "username": "ubuntu" }'
           # Refactr API base URL
-          api_url: # optional
+       api_url: # optional
