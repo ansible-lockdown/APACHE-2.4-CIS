@@ -253,7 +253,7 @@
               changed_when: false
               failed_when: false
               register: apache_ubuntu_3_1_configured_user_group
-      
+
             - name: "SCORED | 3.1 | AUDIT | Ensure the Apache Web Server Runs As a Non-Root User | Warn about user"
               debug:
                   msg:
@@ -392,7 +392,7 @@
       - name: "SCORED | 3.7 | AUDIT | Ensure the Core Dump Directory Is Secured | Message if CoreDumpDirectory is Web Document Root Dir"
         debug:
             msg: "WARNING!! Your CoreDumpDirectory is using the Web Document Root directory: {{ apache_ubuntu_3_7_coredumpdirectory.stdout }}"
-        when: 
+        when:
             - apache_ubuntu_3_7_coredumpdirectory.stdout == apache2_cis_doc_root_dir
 
       - name: "SCORED | 3.7 | PATCH | Ensure the Core Dump Directory Is Secured | Set CoreDumpDirectory in apache2.conf"
@@ -504,7 +504,7 @@
             msg:
                 - "WARNING!! The ScoreBoardFile parameter is in use using the DocumentRoot location"
                 - "This does not conform to CIS standars. Please change the ScoreBoardFile location in {{ apache2_cis_server_root_dir }}/apache2.conf"
-        when: 
+        when:
             - '"{{ apache2_cis_doc_root_dir }}" in apache_ubuntu_3_10_scoreboardfile.stdout'
 
       - name: "SCORED | 3.10 | PATCH | Ensure the ScoreBoard File Is Secured | Update file permissions"
@@ -1037,7 +1037,7 @@
         failed_when: false
         register: apache_ubuntu_5_11_files_match_1
 
-      - name:  "SCORED | 5.11 | AUDIT | Ensure Access to Inappropriate File Extensions Is Restricted | Find FilesMatch for specified files"
+      - name: "SCORED | 5.11 | AUDIT | Ensure Access to Inappropriate File Extensions Is Restricted | Find FilesMatch for specified files"
         shell: cat {{ apache2_cis_server_root_dir }}/apache2.conf | grep -ozP '<FilesMatch \"\^\.\*\\.\(.*\)\$\"\>([\S\s]*?)<\/FilesMatch>'
         changed_when: false
         failed_when: false
@@ -1876,7 +1876,7 @@
 
 # -----------------------------
 # -----------------------------
-# Control 9.5 and 9.6 are hard to set individually so they are combined to be a single line. 
+# Control 9.5 and 9.6 are hard to set individually so they are combined to be a single line.
 # -----------------------------
 # -----------------------------
 - name: |
