@@ -37,4 +37,3 @@ jobs:
           variables: '{ "gitrepo": "https://github.com/ansible-lockdown/UBUNTU20-CIS.git", "image": "ami-0fe12c34e05228a69", "username": "ubuntu" }'
           # Refactr API base URL
           api_url: # optional
-          
