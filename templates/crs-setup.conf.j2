@@ -168,7 +168,7 @@ SecDefaultAction "phase:2,log,auditlog,pass"
 #
 # Uncomment this rule to change the default:
 #
-#SecAction \
+# SecAction \
 #  "id:900000,\
 #   phase:1,\
 #   nolog,\
@@ -201,7 +201,7 @@ SecDefaultAction "phase:2,log,auditlog,pass"
 # In general, 'phase:request' is used. However, we want to make absolutely sure
 # that all configuration variables are set before the CRS rules are processed.)
 #
-#SecAction \
+# SecAction \
 # "id:900100,\
 #  phase:1,\
 #  nolog,\
@@ -293,7 +293,7 @@ SecDefaultAction "phase:2,log,auditlog,pass"
 #
 # Modify and uncomment this rule to select which application:
 #
-#SecAction \
+# SecAction \
 # "id:900130,\
 #  phase:1,\
 #  nolog,\
@@ -320,7 +320,7 @@ SecDefaultAction "phase:2,log,auditlog,pass"
 # Example: for WebDAV, add the following methods: CHECKOUT COPY DELETE LOCK
 #          MERGE MKACTIVITY MKCOL MOVE PROPFIND PROPPATCH PUT UNLOCK
 # Uncomment this rule to change the default.
-#SecAction \
+# SecAction \
 # "id:900200,\
 #  phase:1,\
 #  nolog,\
@@ -331,7 +331,7 @@ SecDefaultAction "phase:2,log,auditlog,pass"
 # Content-Types that a client is allowed to send in a request.
 # Default: application/x-www-form-urlencoded|multipart/form-data|text/xml|application/xml|application/x-amf|application/json|text/plain
 # Uncomment this rule to change the default.
-#SecAction \
+# SecAction \
 # "id:900220,\
 #  phase:1,\
 #  nolog,\
@@ -345,7 +345,7 @@ SecDefaultAction "phase:2,log,auditlog,pass"
 # Note that some web server versions use 'HTTP/2', some 'HTTP/2.0', so
 # we include both version strings by default.
 # Uncomment this rule to change the default.
-#SecAction \
+# SecAction \
 # "id:900230,\
 #  phase:1,\
 #  nolog,\
@@ -358,7 +358,7 @@ SecDefaultAction "phase:2,log,auditlog,pass"
 # Default: .asa/ .asax/ .ascx/ .axd/ .backup/ .bak/ .bat/ .cdx/ .cer/ .cfg/ .cmd/ .com/ .config/ .conf/ .cs/ .csproj/ .csr/ .dat/ .db/ .dbf/ .dll/ .dos/ .htr/ .htw/ .ida/ .idc/ .idq/ .inc/ .ini/ .key/ .licx/ .lnk/ .log/ .mdb/ .old/ .pass/ .pdb/ .pol/ .printer/ .pwd/ .resources/ .resx/ .sql/ .sys/ .vb/ .vbs/ .vbproj/ .vsdisco/ .webinfo/ .xsd/ .xsx/
 # Example: .bak/ .config/ .conf/ .db/ .ini/ .log/ .old/ .pass/ .pdb/ .sql/
 # Uncomment this rule to change the default.
-#SecAction \
+# SecAction \
 # "id:900240,\
 #  phase:1,\
 #  nolog,\
@@ -371,7 +371,7 @@ SecDefaultAction "phase:2,log,auditlog,pass"
 # Blocking Proxy header prevents 'httpoxy' vulnerability: https://httpoxy.org
 # Default: /proxy/ /lock-token/ /content-range/ /translate/ /if/
 # Uncomment this rule to change the default.
-#SecAction \
+# SecAction \
 # "id:900250,\
 #  phase:1,\
 #  nolog,\
@@ -384,7 +384,7 @@ SecDefaultAction "phase:2,log,auditlog,pass"
 # Used in DoS protection rule. See section "Anti-Automation / DoS Protection".
 # Default: /.jpg/ /.jpeg/ /.png/ /.gif/ /.js/ /.css/ /.ico/ /.svg/ /.webp/
 # Uncomment this rule to change the default.
-#SecAction \
+# SecAction \
 # "id:900260,\
 #  phase:1,\
 #  nolog,\
@@ -407,7 +407,7 @@ SecDefaultAction "phase:2,log,auditlog,pass"
 # Default: unlimited
 # Example: 255
 # Uncomment this rule to set a limit.
-#SecAction \
+# SecAction \
 # "id:900300,\
 #  phase:1,\
 #  nolog,\
@@ -419,7 +419,7 @@ SecDefaultAction "phase:2,log,auditlog,pass"
 # Default: unlimited
 # Example: 100
 # Uncomment this rule to set a limit.
-#SecAction \
+# SecAction \
 # "id:900310,\
 #  phase:1,\
 #  nolog,\
@@ -431,7 +431,7 @@ SecDefaultAction "phase:2,log,auditlog,pass"
 # Default: unlimited
 # Example: 400
 # Uncomment this rule to set a limit.
-#SecAction \
+# SecAction \
 # "id:900320,\
 #  phase:1,\
 #  nolog,\
@@ -443,7 +443,7 @@ SecDefaultAction "phase:2,log,auditlog,pass"
 # Default: unlimited
 # Example: 64000
 # Uncomment this rule to set a limit.
-#SecAction \
+# SecAction \
 # "id:900330,\
 #  phase:1,\
 #  nolog,\
@@ -455,7 +455,7 @@ SecDefaultAction "phase:2,log,auditlog,pass"
 # Default: unlimited
 # Example: 1048576
 # Uncomment this rule to set a limit.
-#SecAction \
+# SecAction \
 # "id:900340,\
 #  phase:1,\
 #  nolog,\
@@ -467,7 +467,7 @@ SecDefaultAction "phase:2,log,auditlog,pass"
 # Default: unlimited
 # Example: 1048576
 # Uncomment this rule to set a limit.
-#SecAction \
+# SecAction \
 # "id:900350,\
 #  phase:1,\
 #  nolog,\
@@ -506,7 +506,7 @@ SecDefaultAction "phase:2,log,auditlog,pass"
 #
 # Uncomment this rule to enable this feature:
 #
-#SecAction "id:900400,\
+# SecAction "id:900400,\
 #  phase:1,\
 #  pass,\
 #  nolog,\
@@ -528,8 +528,8 @@ SecDefaultAction "phase:2,log,auditlog,pass"
 #
 # Uncomment these rules to use this feature:
 #
-#SecHttpBlKey XXXXXXXXXXXXXXXXX
-#SecAction "id:900500,\
+# SecHttpBlKey XXXXXXXXXXXXXXXXX
+# SecAction "id:900500,\
 #  phase:1,\
 #  nolog,\
 #  pass,\
@@ -560,7 +560,7 @@ SecDefaultAction "phase:2,log,auditlog,pass"
 #
 # Uncomment this rule to use this feature:
 #
-#SecGeoLookupDB util/geo-location/GeoIP.dat
+# SecGeoLookupDB util/geo-location/GeoIP.dat
 
 
 #
@@ -583,7 +583,7 @@ SecDefaultAction "phase:2,log,auditlog,pass"
 #
 # Uncomment this rule to use this feature:
 #
-#SecAction \
+# SecAction \
 # "id:900600,\
 #  phase:1,\
 #  nolog,\
@@ -609,7 +609,7 @@ SecDefaultAction "phase:2,log,auditlog,pass"
 #
 # Uncomment this rule to use this feature:
 #
-#SecAction \
+# SecAction \
 # "id:900700,\
 #  phase:1,\
 #  nolog,\
@@ -629,7 +629,7 @@ SecDefaultAction "phase:2,log,auditlog,pass"
 #
 # Uncomment this rule to use this feature:
 #
-#SecAction \
+# SecAction \
 # "id:900950,\
 #  phase:1,\
 #  nolog,\
@@ -668,7 +668,7 @@ SecDefaultAction "phase:2,log,auditlog,pass"
 #
 # Uncomment this rule to use this feature:
 #
-#SecAction \
+# SecAction \
 # "id:900960,\
 #  phase:1,\
 #  nolog,\
@@ -679,7 +679,7 @@ SecDefaultAction "phase:2,log,auditlog,pass"
 # Uncomment this rule to change the blocking time:
 # Default: 300 (5 minutes)
 #
-#SecAction \
+# SecAction \
 # "id:900970,\
 #  phase:1,\
 #  nolog,\
@@ -704,7 +704,7 @@ SecDefaultAction "phase:2,log,auditlog,pass"
 # Please keep this directive uncommented.
 # Default: 600 (10 minutes)
 # SecCollectionTimeout seconds
-SecCollectionTimeout 600
+ SecCollectionTimeout 600
 #
 # -- [[ Debug Mode ]] ----------------------------------------------------------
 #
@@ -740,8 +740,8 @@ SecCollectionTimeout 600
 # Uncomment these rules, filling in your CRS path and the source IP address,
 # to enable debug mode:
 #
-#Include /path/to/crs/util/debug/RESPONSE-981-DEBUG.conf
-#SecRule REMOTE_ADDR "@ipMatch 192.168.1.100" \
+# Include /path/to/crs/util/debug/RESPONSE-981-DEBUG.conf
+# SecRule REMOTE_ADDR "@ipMatch 192.168.1.100" \
 # "id:900980,\
 #  phase:1,\
 #  nolog,\
@@ -769,3 +769,4 @@ SecAction \
   pass,\
   t:none,\
   setvar:tx.crs_setup_version=300"
+  
