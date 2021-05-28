@@ -92,7 +92,7 @@
 # - In Apache, you can use ErrorDocument to show a friendly error page or
 # perform a redirect: https://httpd.apache.org/docs/2.4/custom-error.html
 
-"---" SecDefaultAction "phase:1,log,auditlog,pass"
+SecDefaultAction "phase:1,log,auditlog,pass"
 SecDefaultAction "phase:2,log,auditlog,pass"
 
 # Example: Anomaly Scoring mode, log only to ModSecurity audit log
@@ -704,7 +704,7 @@ SecDefaultAction "phase:2,log,auditlog,pass"
 # Please keep this directive uncommented.
 # Default: 600 (10 minutes)
 # SecCollectionTimeout seconds
- SecCollectionTimeout 600
+SecCollectionTimeout 600
 #
 # -- [[ Debug Mode ]] ----------------------------------------------------------
 #
