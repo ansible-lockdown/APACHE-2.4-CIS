@@ -16,9 +16,9 @@
               - xenial
               - bionic
               - focal
-    galaxy_tags:
-        - system
-        - security
-        - cis
-        - hardening
+      galaxy_tags:
+          - system
+          - security
+          - cis
+          - hardening
  dependencies: []
