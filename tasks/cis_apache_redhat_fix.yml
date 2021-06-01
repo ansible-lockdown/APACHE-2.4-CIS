@@ -1520,7 +1520,7 @@
 
       - name: "SCORED | 7.2 | PATCH | Ensure a Valid Trusted Certificate Is Installed | Create CSR"
         openssl_csr:
-            path: "{{ apache_cis_csr_folder }}/{{ apache_cis_hostname_cert}}.csr"
+            path: "{{ apache_cis_csr_folder }}/{{ apache_cis_hostname_cert }}.csr"
             privatekey_path: /etc/ssl/certs/{{ apache_cis_hostname_cert }}.key
             privatekey_passphrase: "{{ apache_cis_privatekey_passphrase }}"
             country_name: "{{ apache_req_distinguished_name_settings.countryName_default }}"
