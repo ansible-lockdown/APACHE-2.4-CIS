@@ -1,8 +1,8 @@
 ---
 galaxy_info:
-  author: "DFed, George Nalen, Carnell Smith"
-  description: "Apply the Apache 2.4 CIS"
-  company: "MindPoint Group"
-  license: license (GPL-2.0-or-later, MIT, etc)
-  role_name: apache_24_cis
-  min_ansible_version: 2.9
+   author: "DFed, George Nalen, Carnell Smith"
+   description: "Apply the Apache 2.4 CIS"
+   company: "MindPoint Group"
+   license: license (GPL-2.0-or-later, MIT, etc)
+   role_name: apache_24_cis
+   min_ansible_version: 2.9
