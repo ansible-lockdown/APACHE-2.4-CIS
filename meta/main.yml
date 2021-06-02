@@ -13,7 +13,7 @@ galaxy_info:
             - 8
 
       - name: Ubuntu
-         versions:
+        versions:
             - xenial
             - bionic
             - focal
