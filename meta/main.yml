@@ -19,10 +19,10 @@ galaxy_info:
               - bionic
               - focal
 
-  galaxy_tags:
+   galaxy_tags:
         - system
         - security
         - cis
         - hardening
-
+ 
 dependencies: []
