@@ -806,9 +806,7 @@
       #       test_after: "{{ test | regex_search('<Directory \"\/var\/www\/html\">([\\s\\S]*?)<\/Directory>', multiline=True) }}"
 
       - debug: var=apache_rhel_5_2_vdir_doc_settings
-
       - debug: var=apache_rhel_5_2_doc_root_dir
-
       - debug: var=test_after
 
       - name: "SCORED | 5.2 | PATCH | Ensure Options for the Web Root Directory Are Restricted | Set options to None or Multiviews if options does not exist"
