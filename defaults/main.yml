@@ -22,6 +22,7 @@ apache_cis_skip_for_travis: false
 # but are disabled by default to avoid disruption.
 apache_cis_disruption_high: true
 
+# Test
 # This will automate the install of Apache in the prelim tasks
 # If apache is already installed set to false
 automate_install: true
@@ -190,7 +191,6 @@ apache_cis_listen_ip_port:
 # Section 6 task variables
 # Control 6.1
 # all_mods is the level for everything but but core module. Value bust be notice or lower. The core_mod is the core mod setting and needs to be info or lower.
-
 apache_cis_loglevel:
     all_mods: "notice"
     core_mod: "info"
@@ -223,7 +223,6 @@ apache_cis_owasp_automate: true
 # When apache_cis_custom_cert set to true the file in files/custom_cert will be copied to the /etc/ssl/certs folder
 # When apache_cis_custom_cert set to false the control will create a self signed certificate
 apache_cis_custom_cert: false
-
 # The hostname used for certificate. It is important to remember that the browser will compare the host name in the URL to the common name in the
 # certificate, so that it is important that all https: URL's match the correct host name.
 # Specifically, the host name www.example.com is not the same as example.com nor the
