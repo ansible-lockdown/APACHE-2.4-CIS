@@ -46,7 +46,7 @@
 
       - name: Install RHEL 7 based packages
         yum:
-            name: ['mod_session', 'mod_ssl', 'apr-util-openssl', 'python-lxml, pyOpenSSL, python2-cryptography,libselinux-python,policycoreutils-python']
+            name: ['mod_session', 'mod_ssl', 'apr-util-openssl', 'python3-lxml', 'pyOpenSSL', 'python2-cryptography', 'libselinux-python', 'policycoreutils-python']
             state: present
         when: ansible_facts.distribution_file_variety == "RedHat" and ansible_facts.distribution_major_version == "7"
 
@@ -101,7 +101,7 @@
         yum:
             name: policycoreutils-python-utils
             state: present
-        when: ansible_facts.distribution_file_variety == "RedHat" and ansible_facts.distribution_major_version == "8"
+        when: ansible_facts.distribution_file_variety == "RedHat" and ansible_facts.distribution_major_version == "7"
   when:
       - apache_cis_11_2
       - apache_cis_section11
